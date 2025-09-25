@@ -8,6 +8,30 @@ export default function Page() {
       <Link href="/inventario" asChild>
         <Button title="Ir a inventario" />
       </Link>
+      <Text>Login</Text>
+      <Link href="/login" asChild>
+        <Button title="Ir a Login" />
+      </Link>
+      <Text>Nueva Entrada</Text>
+      <Link href="/nuevaEntrada" asChild>
+        <Button title="Ir a Nueva Entrada" />
+      </Link>
+      <Text>Nueva Salida</Text>
+      <Link href="/nuevaSalida" asChild>
+        <Button title="Ir a Nueva Salida" />
+      </Link>
+      <Text>Reportes</Text>
+      <Link href="/reportes" asChild>
+        <Button title="Ir a Reportes" />
+      </Link>
+      <Text>Ajustes</Text>
+      <Link href="/ajustes" asChild>
+        <Button title="Ir a Ajustes" />
+      </Link>
+      <Text>Usuarios</Text>
+      <Link href="/usuarios" asChild>
+        <Button title="Ir a Usuarios" />
+      </Link>
     </View>
   )
 }
