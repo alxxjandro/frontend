@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -6,19 +6,18 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
-  Button,
-} from 'react-native';
-import { Link } from 'expo-router';
-import { Calendar } from 'react-native-calendars';
+} from 'react-native'
+import { Link } from 'expo-router'
+import { Calendar } from 'react-native-calendars'
 
 export default function NuevaSalida() {
-  const [fecha, setFecha] = useState('14/09/2025');
-  const [productos, setProductos] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [motivo, setMotivo] = useState(null);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [fecha, setFecha] = useState('14/09/2025')
+  const [productos, setProductos] = useState([])
+  const [open, setOpen] = useState(false)
+  const [motivo, setMotivo] = useState(null)
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
-  const opcionesMotivo = ['Venta', 'Donación', 'Descarte'];
+  const opcionesMotivo = ['Venta', 'Donación', 'Descarte']
 
   return (
     <View style={styles.container}>
@@ -54,8 +53,8 @@ export default function NuevaSalida() {
                   key={item}
                   style={styles.item}
                   onPress={() => {
-                    setMotivo(item);
-                    setOpen(false);
+                    setMotivo(item)
+                    setOpen(false)
                   }}
                 >
                   <Text>{item}</Text>
@@ -78,11 +77,13 @@ export default function NuevaSalida() {
               <Calendar
                 onDayPress={(day) => {
                   const formatted =
-                    day.day.toString().padStart(2, '0') + '/' +
-                    day.month.toString().padStart(2, '0') + '/' +
-                    day.year;
-                  setFecha(formatted);
-                  setDatePickerVisibility(false);
+                    day.day.toString().padStart(2, '0') +
+                    '/' +
+                    day.month.toString().padStart(2, '0') +
+                    '/' +
+                    day.year
+                  setFecha(formatted)
+                  setDatePickerVisibility(false)
                 }}
                 markedDates={{
                   [fecha.split('/').reverse().join('-')]: {
@@ -103,8 +104,18 @@ export default function NuevaSalida() {
                 }}
                 dayNames={['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']}
                 monthNames={[
-                  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                  'Enero',
+                  'Febrero',
+                  'Marzo',
+                  'Abril',
+                  'Mayo',
+                  'Junio',
+                  'Julio',
+                  'Agosto',
+                  'Septiembre',
+                  'Octubre',
+                  'Noviembre',
+                  'Diciembre',
                 ]}
               />
               <TouchableOpacity
@@ -124,7 +135,6 @@ export default function NuevaSalida() {
             </Text>
           </View>
 
-
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => setProductos([...productos, 'Producto nuevo'])}
@@ -138,12 +148,14 @@ export default function NuevaSalida() {
         {/* Botón fijo en la parte inferior */}
         <View style={styles.fixedBottom}>
           <TouchableOpacity style={styles.registerButton}>
-            <Text style={styles.registerButtonText}>Registrar salida &gt;&gt;</Text>
+            <Text style={styles.registerButtonText}>
+              Registrar salida &gt;&gt;
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -248,11 +260,11 @@ const styles = StyleSheet.create({
     color: '#00568F',
   },
   emptyContainer: {
-  backgroundColor: '#E6E6E7',
-  borderRadius: 8,
-  padding: 40,
-  marginTop: 10,
-},
+    backgroundColor: '#E6E6E7',
+    borderRadius: 8,
+    padding: 40,
+    marginTop: 10,
+  },
   emptyText: {
     fontStyle: 'italic',
     color: '#525252',
@@ -278,4 +290,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
-});
+})
