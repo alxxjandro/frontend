@@ -1,37 +1,59 @@
-import { View, Text, Button } from 'react-native'
+import { View, Text } from 'react-native'
 import { Link } from 'expo-router'
+import { globalStyles } from '../styles/globalStyles'
+import CustomButton from '../components/customButton'
 
 export default function Page() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home</Text>
-      <Link href="/inventario" asChild>
-        <Button title="Ir a inventario" />
-      </Link>
-      <Text>Login</Text>
-      <Link href="/login" asChild>
-        <Button title="Ir a Login" />
-      </Link>
-      <Text>Nueva Entrada</Text>
-      <Link href="/nuevaEntrada" asChild>
-        <Button title="Ir a Nueva Entrada" />
-      </Link>
-      <Text>Nueva Salida</Text>
-      <Link href="/nuevaSalida" asChild>
-        <Button title="Ir a Nueva Salida" />
-      </Link>
-      <Text>Reportes</Text>
-      <Link href="/reportes" asChild>
-        <Button title="Ir a Reportes" />
-      </Link>
-      <Text>Ajustes</Text>
-      <Link href="/ajustes" asChild>
-        <Button title="Ir a Ajustes" />
-      </Link>
-      <Text>Usuarios</Text>
-      <Link href="/usuarios" asChild>
-        <Button title="Ir a Usuarios" />
-      </Link>
+    <View style={globalStyles.body}>
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Home</Text>
+        <Link href="/inventario" asChild>
+          <CustomButton title="Ir a inventario" />
+        </Link>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Login</Text>
+        <Link href="/login" asChild>
+          <CustomButton title="Ir a Login" />
+        </Link>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Nueva Entrada</Text>
+        <Link href="/nuevaEntrada" asChild>
+          <CustomButton title="Ir a Nueva Entrada" />
+        </Link>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Nueva Salida</Text>
+        <Link href="/nuevaSalida" asChild>
+          <CustomButton title="Ir a Nueva Salida" />
+        </Link>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Reportes</Text>
+        <Link href="/reportes" asChild>
+          <CustomButton title="Ir a Reportes" />
+        </Link>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Ajustes</Text>
+        <Link href="/ajustes" asChild>
+          <CustomButton title="Ir a Ajustes" />
+        </Link>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.h3}>Usuarios</Text>
+        <Link href="/usuarios" asChild>
+          <CustomButton title="Ir a Usuarios" />
+        </Link>
+      </View>
     </View>
   )
 }
