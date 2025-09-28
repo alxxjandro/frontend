@@ -11,6 +11,15 @@ export const COLORS = {
   whiteText: '#E6E6E7',
   error: '#991B1B',
 }
+export const SIZE = {
+  xxs: 10,
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 24,
+}
 
 export const FONTS = {
   regular: 'Roboto-Regular',
