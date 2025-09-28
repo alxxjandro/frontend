@@ -11,24 +11,35 @@ export default function CustomActionButton({
   iconRight,
 }) {
   return (
-    <TouchableOpacity style={globalStyles.customButton} onPress={onPress}>
+    <TouchableOpacity style={globalStyles.customActionButton} onPress={onPress}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         {iconLeft && (
-          <Ionicons
-            name={iconLeft}
-            size={size}
-            color={color}
-            style={{ marginRight: 8 }}
-          />
+          <View className="iconRight">
+            <Ionicons
+              name={iconLeft}
+              size={size}
+              color={color}
+              style={{ marginRight: 8 }}
+            />
+          </View>
         )}
-        <Text style={globalStyles.customButtonText}>{title}</Text>
+        <Text style={globalStyles.customActionButtonText}>{title}</Text>
+
         {iconRight && (
-          <Ionicons
-            name={iconRight}
-            size={size}
-            color={color}
-            style={{ marginRight: 8 }}
-          />
+          <View
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'end',
+            }}
+          >
+            <Ionicons
+              name={iconRight}
+              size={size}
+              color={color}
+              style={{ marginRight: 8 }}
+            />
+          </View>
         )}
       </View>
     </TouchableOpacity>

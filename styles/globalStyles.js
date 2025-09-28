@@ -80,4 +80,19 @@ export const globalStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  customActionButton: {
+    width: '100%',
+    maxWidth: 332,
+    height: 48,
+    backgroundColor: COLORS.cardBackgroundOne,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+
+  customActionButtonText: {
+    color: COLORS.blackText,
+    fontSize: 16,
+  },
 })
