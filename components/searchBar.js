@@ -1,49 +1,51 @@
-import { useState } from 'react'
-import { View, TextInput } from 'react-native'
+import { View, TextInput, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
-export default function searchBar({
-  placeHolder = '', 
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  icon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000000',
+  },
+})
+
+export default function SearchBar({
+  placeholder = 'Buscar...',
   size = 20,
   color = '#414040',
   icon,
   onChangeText,
-  value
+  value = '',
+  style,
 }) {
-    const [search, setSearch] = useState('');
-    const handleChange = (text) => {
-      setSearch(text);
-      if (onChangeText) {
-        onChangeText(text); 
-      }
-    };
-
-    return (
-      <View style={{       
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        borderWidth: 1, 
-        borderColor: '#D3D3D3', 
-        borderRadius: 5, 
-        padding: 5, 
-        marginBottom: 10,
-        marginTop: 10,
-        marginRight: 30}}>
-
-        {icon && (
-          <Ionicons
-            name={icon}
-            size={size}
-            color={color}
-            style={{ marginRight: 8 }}
-          />
-        )}
-
-        <TextInput style={{ height: 30, flex: 1 }}       
-        onChangeText={handleChange} 
-        value={value} 
-        placeholder={placeHolder} 
-        placeholderTextColor='#737373'/>
-      </View>
-    )
+  return (
+    <View style={[styles.container, style]}>
+      {icon && (
+        <Ionicons name={icon} size={size} color={color} style={styles.icon} />
+      )}
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeText}
+        value={value}
+        placeholder={placeholder}
+        placeholderTextColor="#737373"
+        autoCapitalize="none"
+        autoCorrect={false}
+        clearButtonMode="while-editing"
+      />
+    </View>
+  )
 }

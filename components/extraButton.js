@@ -1,33 +1,53 @@
-import { Text, TouchableOpacity, View } from 'react-native'
+import { Text, TouchableOpacity, View, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { inventarioStyles } from '../styles/inventarioStyles'
+
+const styles = StyleSheet.create({
+  button: {
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    textAlign: 'center',
+  },
+  icon: {
+    marginLeft: 4,
+  },
+})
 
 export default function ExtraButton({
   title,
   onPress,
-  size,
-  color,
   icon,
-  marginLeft,
+  size = 20,
+  color = '#000000',
   style,
-  styleText,
-  product,
-  productStyle
+  textStyle,
+  disabled = false,
 }) {
   return (
-    <TouchableOpacity style={[inventarioStyles.customButton, style]} onPress={onPress}>
-      <View>
-        <Text style={[productStyle]}>{product}</Text>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={[styleText]}>{title}</Text>
+    <TouchableOpacity
+      style={[styles.button, style]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.7}
+    >
+      <View style={styles.content}>
+        {title && (
+          <Text style={[styles.text, textStyle]} numberOfLines={1}>
+            {title}
+          </Text>
+        )}
         {icon && (
-          <Ionicons
-            name={icon}
-            size={size}
-            color={color}
-            style={{ marginLeft }}
-          />
+          <Ionicons name={icon} size={size} color={color} style={styles.icon} />
         )}
       </View>
     </TouchableOpacity>

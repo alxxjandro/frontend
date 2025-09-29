@@ -1,87 +1,185 @@
-import { useState, useEffect } from 'react'
-import { View, Text, Modal, TouchableOpacity } from 'react-native'
+import { useState } from 'react'
+import { View, ScrollView, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import SearchBar from '../../components/searchBar'
-import { globalStyles } from '../../styles/globalStyles'
-import ExtraButton from '../../components/extraButton'
-import { inventarioStyles } from '../../styles/inventarioStyles'
-import ProductButton from '../../components/productButton'
-import TipoVistaModal from './Componentes/tipoVista'
-import OrdenarPor from './Componentes/ordenarPor'
-import Categorias from './Componentes/categorias'
 
-export default function Inventario() {
+import InventarioHeader from './Componentes/InventarioHeader'
+import InventarioSearchSection from './Componentes/InventarioSearchSection'
+import InventarioFilters from './Componentes/InventarioFilters'
+import InventarioProductGrid from './Componentes/InventarioProductGrid'
+import FilterModal from './Componentes/FilterModal'
+import { COLORS } from '../../styles/globalStyles'
+
+// Constants
+const INITIAL_PRODUCTS = [
+  {
+    id: 1,
+    name: 'Manzana',
+    emoji: '🍎',
+    quantity: 53,
+    unit: 'disponibles',
+    route: '/inventario/Producto/Manzana',
+  },
+  {
+    id: 2,
+    name: 'Leche',
+    emoji: '🥛',
+    quantity: 12,
+    unit: 'L disponibles',
+    route: '/inventario/Producto/Leche',
+  },
+  {
+    id: 3,
+    name: 'Naranja',
+    emoji: '🍊',
+    quantity: 41,
+    unit: 'disponibles',
+    route: '/inventario/Producto/Manzana',
+  },
+  {
+    id: 4,
+    name: 'Cereal',
+    emoji: '🥣',
+    quantity: 20,
+    unit: 'disponibles',
+    route: '/inventario/Producto/Leche',
+  },
+  {
+    id: 5,
+    name: 'Huevo',
+    emoji: '🥚',
+    quantity: 199,
+    unit: 'disponibles',
+    route: '/inventario/Producto/Manzana',
+  },
+  {
+    id: 6,
+    name: 'Tomate',
+    emoji: '🍅',
+    quantity: 4,
+    unit: 'disponibles',
+    route: '/inventario/Producto/Leche',
+  },
+]
+
+const TOTAL_PRODUCTS = 59
+
+// Modal configurations
+const MODAL_CONFIGS = {
+  tipoVista: {
+    title: 'Tipo de vista',
+    options: ['Completa', 'Compacta'],
+  },
+  ordenarPor: {
+    title: 'Ordenar por',
+    options: [
+      'Nombre',
+      'Cantidad',
+      'Categoria',
+      'FechaEntrada',
+      'FechaSalida',
+      'Caducidad',
+    ],
+  },
+  categorias: {
+    title: 'Categorías',
+    options: [
+      'Categoria 1',
+      'Categoria 2',
+      'Categoria 3',
+      'Categoria 4',
+      'Categoria 5',
+    ],
+  },
+}
+
+// Minimal container styles only
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+})
+
+export default function InventarioScreen() {
   const router = useRouter()
-  const [searchText, setSearchText] = useState('');
-  const [showTipoVista, setShowTipoVista] = useState(false)
-  const [showOrdenarPor, setShowOrdenarPor] = useState(false)
-  const [showCategorias, setShowCategorias] = useState(false)
 
-  const [products, setProducts] = useState([
-  { name: 'Manzana', emoji: '🍎', subtitle: '53 disponibles', route: '/inventario/Producto/Manzana' },
-  { name: 'Leche', emoji: '🥛', subtitle: '12L disponibles', route: '/inventario/Producto/Leche' },
-  { name: 'Naranja', emoji: '🍊', subtitle: '41 disponibles', route: '/inventario/Producto/Manzana' },
-  { name: 'Cereal', emoji: '🥣', subtitle: '20 disponibles', route: '/inventario/Producto/Leche' },
-  { name: 'Huevo', emoji: '🥚', subtitle: '199 disponibles', route: '/inventario/Producto/Manzana' },
-  { name: 'Tomate', emoji: '🍅', subtitle: '4 disponibles', route: '/inventario/Producto/Leche' },
-  ]);
+  // State management
+  const [searchText, setSearchText] = useState('')
+  const [products] = useState(INITIAL_PRODUCTS)
+  const [modalStates, setModalStates] = useState({
+    tipoVista: false,
+    ordenarPor: false,
+    categorias: false,
+  })
 
-  const filteredProducts = products.filter(product =>
-  product.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // Helper functions
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchText.toLowerCase())
+  )
+
+  const toggleModal = (modalName) => {
+    setModalStates((prev) => ({
+      ...prev,
+      [modalName]: !prev[modalName],
+    }))
+  }
+
+  const handleGoBack = () => {
+    router.push('/')
+  }
+
+  const handleProductPress = (route) => {
+    router.push(route)
+  }
+
+  const handleAddProduct = () => {
+    // TODO: Implement add product functionality
+    console.log('Add product pressed')
+  }
 
   return (
-    <View style={[inventarioStyles.body, globalStyles.container]}>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <InventarioHeader
+          totalProducts={TOTAL_PRODUCTS}
+          onGoBack={handleGoBack}
+        />
 
-      {/* Titulo inventario */}
-      <View style={inventarioStyles.header}>
-          <View>
-            <Text style={globalStyles.h1}>
-              Inventario  
-            </Text> 
-            <Text>
-              (59 productos)
-            </Text>
-          </View> 
-            <ExtraButton icon='chevron-back' color='black' style={inventarioStyles.backButton} size={30} onPress={() => router.push('/')}/> 
-      </View>
+        <InventarioSearchSection
+          searchText={searchText}
+          onSearchChange={setSearchText}
+          onAddPress={handleAddProduct}
+        />
 
-      {/* Buscador + botón agregar */}
-      <View style={inventarioStyles.searchSection}>
-        <SearchBar icon='search-outline' placeHolder="Buscar producto" value={searchText} onChangeText={setSearchText}/>
-        <ExtraButton color='white' style={inventarioStyles.addButton} styleText={inventarioStyles.customButtonTextFilter} title='Agregar producto' icon='add' size={15}/>
-      </View>
+        <InventarioFilters onFilterPress={toggleModal} />
 
-      {/* Filtros */}
-      <View style={[inventarioStyles.filtersSection, { justifyContent: 'space-around' }]}>  
-        <ExtraButton color='white' style={[inventarioStyles.filterButton]} styleText={inventarioStyles.customButtonTextFilter} title='Tipo de vista' icon='chevron-down' size={15} onPress={() => setShowTipoVista(true)}/> 
-        <ExtraButton color='white' style={[inventarioStyles.filterButton]} styleText={inventarioStyles.customButtonTextFilter} title='Ordenar por' icon='chevron-down' size={15} onPress={() => setShowOrdenarPor(true)}/>
-        <ExtraButton color='white' style={[inventarioStyles.filterButton]} styleText={inventarioStyles.customButtonTextFilter} title='Categorias' icon='chevron-down' size={15} onPress={() => setShowCategorias(true)}/> 
-      </View>
+        <InventarioProductGrid
+          products={filteredProducts}
+          onProductPress={handleProductPress}
+        />
+      </ScrollView>
 
-      {/* Botones de productos */}
-      <View>
-        <View style={inventarioStyles.buttonGrid}>
-          
-          {filteredProducts.map((product, index) => (
-            <ProductButton
-              key={index}
-              product={product.emoji}
-              productStyle={inventarioStyles.customButtonTextEmoji}
-              title={product.name}
-              subtitle={product.subtitle}
-              icon='chevron-down'
-              styleText={inventarioStyles.customButtonTextAdd}
-              onPress={() => router.push(product.route)}
-            />
-          ))}
-        </View>
-      </View>
-
-      {/* Modales */}
-      <TipoVistaModal visible={showTipoVista} onClose={() => setShowTipoVista(false)}/>
-      <OrdenarPor visible={showOrdenarPor} onClose={() => setShowOrdenarPor(false)}/>
-      <Categorias visible={showCategorias} onClose={() => setShowCategorias(false)}/>
+      {/* Modals */}
+      {Object.entries(MODAL_CONFIGS).map(([modalKey, config]) => (
+        <FilterModal
+          key={modalKey}
+          visible={modalStates[modalKey]}
+          onClose={() => toggleModal(modalKey)}
+          title={config.title}
+          options={config.options}
+        />
+      ))}
     </View>
   )
 }
