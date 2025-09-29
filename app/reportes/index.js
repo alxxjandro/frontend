@@ -1,5 +1,5 @@
 import { Link } from 'expo-router'
-import { View, Button } from 'react-native-web'
+import { View, Button } from 'react-native'
 
 export default function Test() {
   return (

@@ -11,8 +11,16 @@ export default function RootLayout() {
   })
 
   if (!fontsLoaded) {
-    return <></>
+    return null
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'fade',
+        animationDuration: 150,
+      }}
+    />
+  )
 }

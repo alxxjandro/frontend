@@ -2,7 +2,9 @@ import { StyleSheet } from 'react-native'
 
 export const COLORS = {
   primaryGreen: '#95C416',
+  primaryGreen15: 'rgba(149, 196, 22, .15)',
   primaryBlue: '#00568F',
+  primaryBlue15: 'rgba(0, 86, 143, .15)',
   background: '#FBFBFB',
   greyBorder: '#D3D3D3',
   cardBackgroundOne: '#E6E6E7',
@@ -10,6 +12,7 @@ export const COLORS = {
   blackText: '#000000',
   whiteText: '#E6E6E7',
   error: '#991B1B',
+  testing: '#444',
 }
 
 export const FONTS = {
@@ -25,23 +28,33 @@ export const FONTS = {
     lg: 18,
     xl: 20,
     xxl: 24,
+    xxxl: 28,
   },
 }
 
 export const globalStyles = StyleSheet.create({
   body: {
-    boxSizing: 'border-box',
+    flex: 1,
+    alignItems: 'center',
     backgroundColor: COLORS.background,
-    height: '100vh',
-    width: '100vw',
+    width: '100%',
+    height: '100%',
+    padding: '10',
   },
   container: {
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerView: {
+    padding: 100,
+    display: 'flex',
+    flexDirection: 'row',
+    rowGap: 16,
+  },
   h1: {
+    maxWidth: '332',
     fontFamily: FONTS.bold,
-    fontSize: FONTS.size.xxl,
+    fontSize: FONTS.size.xxxl,
   },
   h2: {
     fontFamily: FONTS.bold,
@@ -56,11 +69,9 @@ export const globalStyles = StyleSheet.create({
     fontSize: FONTS.size.sm,
   },
   customButton: {
-    width: '100%',
-    maxWidth: 332,
-    height: 48,
+    flex: 1,
+    maxHeight: 48,
     backgroundColor: COLORS.primaryBlue,
-    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
