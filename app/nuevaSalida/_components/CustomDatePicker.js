@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     right: 0,
-    zIndex: 2000,
+    zIndex: 1500,
     borderWidth: 1,
     borderColor: COLORS.greyBorder,
     borderRadius: 8,

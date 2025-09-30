@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { View, ScrollView, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 
-import InventarioHeader from './Componentes/InventarioHeader'
+import ScreenHeader from '../../components/screenHeader'
 import InventarioSearchSection from './Componentes/InventarioSearchSection'
 import InventarioFilters from './Componentes/InventarioFilters'
 import InventarioProductGrid from './Componentes/InventarioProductGrid'
@@ -135,10 +135,6 @@ export default function InventarioScreen() {
     }))
   }
 
-  const handleGoBack = () => {
-    router.push('/')
-  }
-
   const handleProductPress = (productRoute, product) => {
     if (mode === 'select') {
       setSelectedProduct(product)
@@ -167,9 +163,9 @@ export default function InventarioScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <InventarioHeader
-          totalProducts={TOTAL_PRODUCTS}
-          onGoBack={handleGoBack}
+        <ScreenHeader
+          title="Inventario"
+          subtitle={`(${TOTAL_PRODUCTS} productos)`}
         />
 
         <InventarioSearchSection

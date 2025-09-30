@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Body } from './_components';
-import ScreenHeader from '../nuevaSalida/_components/ScreenHeader';
-import { COLORS, FONTS } from '../../styles/globalStyles';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { Body } from './_components'
+import ScreenHeader from '../../components/screenHeader'
+import { COLORS, FONTS } from '../../styles/globalStyles'
 
 export default function ReportesScreen() {
   return (
@@ -10,7 +10,7 @@ export default function ReportesScreen() {
       <ScreenHeader title="Reportes" showBackButton={true} />
       <Body />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -23,6 +23,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.md,
     color: COLORS.blackText,
-    marginBottom: 20, 
+    marginBottom: 20,
   },
-});
+})

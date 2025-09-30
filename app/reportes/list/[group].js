@@ -1,57 +1,75 @@
-import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SectionList } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { COLORS, FONTS } from '../../../styles/globalStyles';
-import ScreenHeader from '../../nuevaSalida/_components/ScreenHeader';
-import CustomFilter from '../_components/CustomFilter';
-import { mockReports } from '../data/mockData';
+import React, { useMemo } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SectionList,
+} from 'react-native'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { COLORS, FONTS } from '../../../styles/globalStyles'
+import ScreenHeader from '../../../components/screenHeader'
+import CustomFilter from '../_components/CustomFilter'
+import { mockReports } from '../data/mockData'
 
-const Separator = () => <View style={{ height: 5 }} />;
+const Separator = () => <View style={{ height: 5 }} />
 
 // Meses en español
 const monthNames = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
 
 const Group = () => {
-  const router = useRouter();
-  const { group } = useLocalSearchParams(); // ej. "2023-01"
+  const router = useRouter()
+  const { group } = useLocalSearchParams() // ej. "2023-01"
 
   // Obtener el nombre del mes para el título
   const groupTitle = useMemo(() => {
-    if (!group) return 'Reportes';
-    const [year, month] = group.split('-');
-    const monthIndex = parseInt(month, 10) - 1;
-    return `${monthNames[monthIndex]} ${year}`;
-  }, [group]);
+    if (!group) return 'Reportes'
+    const [year, month] = group.split('-')
+    const monthIndex = parseInt(month, 10) - 1
+    return `${monthNames[monthIndex]} ${year}`
+  }, [group])
 
   const reportsToShow = useMemo(() => {
-    if (!group) return [];
-    const [year, month] = group.split('-');
+    if (!group) return []
+    const [year, month] = group.split('-')
     return mockReports.filter((r) => {
-      if (!r.date) return false;
-      const date = new Date(r.date);
+      if (!r.date) return false
+      const date = new Date(r.date)
       return (
         r.type === 'diario' &&
         date.getFullYear().toString() === year &&
         String(date.getMonth() + 1).padStart(2, '0') === month
-      );
-    });
-  }, [group]);
+      )
+    })
+  }, [group])
 
   const handlePress = (report) => {
-    router.push(`/reportes/${report.id}?name=${encodeURIComponent(report.name)}`);
-  };
+    router.push(
+      `/reportes/${report.id}?name=${encodeURIComponent(report.name)}`
+    )
+  }
 
   const groupedData = reportsToShow.reduce((acc, report) => {
-    const reportDate = new Date(report.date);
-    const year = reportDate.getFullYear().toString();
-    const existingGroup = acc.find((g) => g.title === year);
-    if (existingGroup) existingGroup.data.push(report);
-    else acc.push({ title: year, data: [report] });
-    return acc;
-  }, []);
+    const reportDate = new Date(report.date)
+    const year = reportDate.getFullYear().toString()
+    const existingGroup = acc.find((g) => g.title === year)
+    if (existingGroup) existingGroup.data.push(report)
+    else acc.push({ title: year, data: [report] })
+    return acc
+  }, [])
 
   const renderItem = ({ item, index }) => (
     <TouchableOpacity
@@ -61,16 +79,16 @@ const Group = () => {
       <Text style={styles.buttonText}>{item.name}</Text>
       <Text style={styles.buttonDate}>{item.date}</Text>
     </TouchableOpacity>
-  );
+  )
 
   const renderSectionHeader = ({ section: { title } }) => (
     <Text style={styles.headerText}>{title}</Text>
-  );
+  )
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title={groupTitle} backRoute="/reportes" />
-      
+      <ScreenHeader title={groupTitle} />
+
       <View style={styles.contentContainer}>
         <CustomFilter
           options1={[
@@ -95,13 +113,15 @@ const Group = () => {
           style={styles.list}
           ItemSeparatorComponent={Separator}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No hay reportes disponibles para este mes.</Text>
+            <Text style={styles.emptyText}>
+              No hay reportes disponibles para este mes.
+            </Text>
           }
         />
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -152,6 +172,6 @@ const styles = StyleSheet.create({
     marginTop: 50,
     fontFamily: FONTS.regular,
   },
-});
+})
 
-export default Group;
+export default Group

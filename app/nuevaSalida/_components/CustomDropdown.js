@@ -42,8 +42,8 @@ export default function CustomDropdown({
         placeholderStyle={styles.placeholderText}
         arrowIconStyle={styles.arrowIcon}
         tickIconStyle={styles.tickIcon}
-        zIndex={1000}
-        zIndexInverse={3000}
+        zIndex={3000}
+        zIndexInverse={1000}
       />
     </View>
   )
@@ -52,7 +52,7 @@ export default function CustomDropdown({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
-    zIndex: 1000,
+    zIndex: 3000,
   },
   label: {
     fontFamily: FONTS.bold,

@@ -1,12 +1,8 @@
 import { View, ScrollView, StatusBar } from 'react-native'
 import { useState } from 'react'
 import CustomButton from '../../components/customButton'
-import {
-  ScreenHeader,
-  CustomDropdown,
-  CustomDatePicker,
-  ProductList,
-} from './_components'
+import ScreenHeader from '../../components/screenHeader'
+import { CustomDropdown, CustomDatePicker, ProductList } from './_components'
 import { nuevaSalidaStyles } from './_styles/nuevaSalidaStyles'
 import { COLORS } from '../../styles/globalStyles'
 
@@ -40,7 +36,7 @@ export default function NuevaSalida() {
       <View style={nuevaSalidaStyles.wrapper}>
         <ScrollView contentContainerStyle={nuevaSalidaStyles.scrollContent}>
           {/* Header */}
-          <ScreenHeader title="Nueva salida" backRoute="/" />
+          <ScreenHeader title="Nueva salida" />
 
           {/* Dropdown de motivo */}
           <CustomDropdown
