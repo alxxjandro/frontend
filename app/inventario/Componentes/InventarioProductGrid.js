@@ -30,7 +30,11 @@ const styles = StyleSheet.create({
   },
 })
 
-export default function InventarioProductGrid({ products, onProductPress }) {
+export default function InventarioProductGrid({
+  products,
+  onProductPress,
+  mode = 'view',
+}) {
   const formatProductSubtitle = (quantity, unit) => {
     return `${quantity} ${unit}`
   }
@@ -47,7 +51,7 @@ export default function InventarioProductGrid({ products, onProductPress }) {
           icon="chevron-down"
           titleStyle={styles.productTitle}
           buttonStyle={styles.productButton}
-          onPress={() => onProductPress(product.route)}
+          onPress={() => onProductPress(product.route, product)}
         />
       ))}
     </View>

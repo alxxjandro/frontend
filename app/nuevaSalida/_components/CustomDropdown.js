@@ -1,100 +1,99 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
+import { useState } from 'react'
+import DropDownPicker from 'react-native-dropdown-picker'
 import { COLORS, FONTS } from '../../../styles/globalStyles'
 
 export default function CustomDropdown({
   label,
   value,
-  placeholder = 'Seleccionar',
   options = [],
-  isOpen,
-  onToggle,
   onSelect,
+  placeholder = 'Seleccionar',
 }) {
-  return (
-    <View>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <TouchableOpacity style={styles.dropdown} onPress={onToggle}>
-        <Text
-          style={[
-            styles.dropdownText,
-            { color: value ? COLORS.primaryBlue : '#888' },
-          ]}
-        >
-          {value || placeholder}
-        </Text>
-        <Text style={styles.arrow}>{isOpen ? '▲' : '▼'}</Text>
-      </TouchableOpacity>
+  const [open, setOpen] = useState(false)
+  const [selectedValue, setSelectedValue] = useState(value)
 
-      {isOpen && (
-        <View style={styles.dropdownList}>
-          {options.map((item, index) => (
-            <TouchableOpacity
-              key={item}
-              style={[
-                styles.item,
-                index === options.length - 1 && styles.lastItem,
-              ]}
-              onPress={() => onSelect(item)}
-            >
-              <Text style={styles.itemText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+  // Transform options array to dropdown picker format
+  const items = options.map((option, index) => ({
+    label: option,
+    value: option,
+    key: index.toString(),
+  }))
+
+  const handleValueChange = (val) => {
+    setSelectedValue(val)
+    onSelect(val)
+  }
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <DropDownPicker
+        open={open}
+        value={selectedValue}
+        items={items}
+        setOpen={setOpen}
+        setValue={setSelectedValue}
+        onChangeValue={handleValueChange}
+        placeholder={placeholder}
+        style={styles.dropdown}
+        textStyle={styles.dropdownText}
+        dropDownContainerStyle={styles.dropdownList}
+        placeholderStyle={styles.placeholderText}
+        arrowIconStyle={styles.arrowIcon}
+        tickIconStyle={styles.tickIcon}
+        zIndex={1000}
+        zIndexInverse={3000}
+      />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  container: {
+    marginBottom: 10,
+    zIndex: 1000,
+  },
   label: {
     fontFamily: FONTS.bold,
     fontSize: FONTS.size.md,
-    marginTop: 10,
+    marginBottom: 5,
     color: COLORS.primaryBlue,
   },
   dropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
     borderColor: COLORS.greyBorder,
+    borderWidth: 1,
     borderRadius: 6,
-    padding: 12,
-    marginTop: 5,
     backgroundColor: COLORS.background,
+    minHeight: 50,
   },
   dropdownText: {
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.md,
+    color: COLORS.primaryBlue,
   },
-  arrow: {
-    fontSize: FONTS.size.md,
-    color: '#555',
+  placeholderText: {
     fontFamily: FONTS.regular,
+    fontSize: FONTS.size.md,
+    color: '#888',
   },
   dropdownList: {
-    borderWidth: 1,
     borderColor: COLORS.greyBorder,
-    marginTop: 5,
-    borderRadius: 6,
     backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderRadius: 6,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-  item: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.greyBorder,
+  arrowIcon: {
+    width: 20,
+    height: 20,
   },
-  lastItem: {
-    borderBottomWidth: 0,
-  },
-  itemText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONTS.size.md,
-    color: COLORS.blackText,
+  tickIcon: {
+    width: 20,
+    height: 20,
   },
 })

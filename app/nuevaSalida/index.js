@@ -29,10 +29,6 @@ export default function NuevaSalida() {
     setDatePickerVisibility(false)
   }
 
-  const handleAddProduct = () => {
-    setProductos([...productos, 'Producto nuevo'])
-  }
-
   const handleRegisterSalida = () => {
     // Logic for registering the salida
     console.log('Registering salida:', { fecha, motivo, productos })
@@ -68,7 +64,7 @@ export default function NuevaSalida() {
           />
 
           {/* Product List */}
-          <ProductList products={productos} onAddProduct={handleAddProduct} />
+          <ProductList products={productos} />
         </ScrollView>
 
         {/* Fixed Bottom Button */}

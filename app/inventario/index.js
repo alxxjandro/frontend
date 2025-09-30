@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { View, ScrollView, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 
 import InventarioHeader from './Componentes/InventarioHeader'
 import InventarioSearchSection from './Componentes/InventarioSearchSection'
 import InventarioFilters from './Componentes/InventarioFilters'
 import InventarioProductGrid from './Componentes/InventarioProductGrid'
 import FilterModal from './Componentes/FilterModal'
+import ProductSelectionModal from './Componentes/ProductSelectionModal'
 import { COLORS } from '../../styles/globalStyles'
 
 // Constants
@@ -109,6 +110,7 @@ const styles = StyleSheet.create({
 
 export default function InventarioScreen() {
   const router = useRouter()
+  const { mode = 'view' } = useLocalSearchParams()
 
   // State management
   const [searchText, setSearchText] = useState('')
@@ -118,6 +120,8 @@ export default function InventarioScreen() {
     ordenarPor: false,
     categorias: false,
   })
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [productSelectionVisible, setProductSelectionVisible] = useState(false)
 
   // Helper functions
   const filteredProducts = products.filter((product) =>
@@ -135,8 +139,20 @@ export default function InventarioScreen() {
     router.push('/')
   }
 
-  const handleProductPress = (route) => {
-    router.push(route)
+  const handleProductPress = (productRoute, product) => {
+    if (mode === 'select') {
+      setSelectedProduct(product)
+      setProductSelectionVisible(true)
+    } else {
+      router.push(productRoute)
+    }
+  }
+
+  const handleProductSelection = (productWithQuantity) => {
+    // TODO: Handle the selected product with quantity
+    console.log('Product selected:', productWithQuantity)
+    // Navigate back to nuevaSalida with the selected product
+    router.back()
   }
 
   const handleAddProduct = () => {
@@ -167,10 +183,11 @@ export default function InventarioScreen() {
         <InventarioProductGrid
           products={filteredProducts}
           onProductPress={handleProductPress}
+          mode={mode}
         />
       </ScrollView>
 
-      {/* Modals */}
+      {/* Filter Modals */}
       {Object.entries(MODAL_CONFIGS).map(([modalKey, config]) => (
         <FilterModal
           key={modalKey}
@@ -180,6 +197,14 @@ export default function InventarioScreen() {
           options={config.options}
         />
       ))}
+
+      {/* Product Selection Modal */}
+      <ProductSelectionModal
+        visible={productSelectionVisible}
+        onClose={() => setProductSelectionVisible(false)}
+        product={selectedProduct}
+        onConfirm={handleProductSelection}
+      />
     </View>
   )
 }
