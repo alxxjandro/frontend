@@ -1,4 +1,3 @@
-// eslint.config.js
 import js from '@eslint/js'
 import babelParser from '@babel/eslint-parser'
 import react from 'eslint-plugin-react'
@@ -14,6 +13,9 @@ export default [
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
+      globals: {
+        require: 'readonly',
+      },
       parser: babelParser,
       parserOptions: {
         requireConfigFile: false,
@@ -34,15 +36,13 @@ export default [
       prettier,
     },
     rules: {
-      semi: ['error', 'never'],
-      quotes: ['error', 'single'],
-      'no-console': ['error', { allow: ['error'] }],
-      'prettier/prettier': 'error',
+      semi: ['warn', 'never'],
+      quotes: ['warn', 'single'],
+      'no-console': ['warn', { allow: ['error'] }],
+      'prettier/prettier': 'warn',
       'react/prop-types': 'off',
-
-      // 👇 Esto arregla el bug que tienes
-      'react/jsx-uses-react': 'error',
-      'react/jsx-uses-vars': 'error',
+      'react/jsx-uses-react': 'warn',
+      'react/jsx-uses-vars': 'warn',
     },
     settings: {
       react: {

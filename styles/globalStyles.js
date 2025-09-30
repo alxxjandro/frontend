@@ -35,6 +35,13 @@ export const globalStyles = StyleSheet.create({
     height: '100vh',
     width: '100vw',
   },
+  authContainer: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   container: {
     justifyContent: 'center',
     alignItems: 'center',
