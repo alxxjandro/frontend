@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, Button } from 'react-native'
 import { Link } from 'expo-router'
 import { globalStyles } from '../styles/globalStyles'
 import CustomButton from '../components/customButton'
