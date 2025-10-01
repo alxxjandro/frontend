@@ -14,6 +14,15 @@ export const COLORS = {
   error: '#991B1B',
   testing: '#444',
 }
+export const SIZE = {
+  xxs: 10,
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 24,
+}
 
 export const FONTS = {
   regular: 'Roboto-Regular',
@@ -88,5 +97,20 @@ export const globalStyles = StyleSheet.create({
     color: COLORS.whiteText,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  customActionButton: {
+    width: '100%',
+    maxWidth: 332,
+    height: 48,
+    backgroundColor: COLORS.cardBackgroundOne,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+
+  customActionButtonText: {
+    color: COLORS.blackText,
+    fontSize: 16,
   },
 })
