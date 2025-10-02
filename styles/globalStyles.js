@@ -5,13 +5,19 @@ export const COLORS = {
   primaryGreen15: 'rgba(149, 196, 22, .15)',
   primaryBlue: '#00568F',
   primaryBlue15: 'rgba(0, 86, 143, .15)',
+  brownAccent: '#824917',
+  brownAccent15: 'rgba(130, 73, 23, .15)',
+  yellowAccent: '#FFBF00',
+  yellowAccent15: 'rgba(255, 191, 0, .15)',
   background: '#FBFBFB',
   greyBorder: '#D3D3D3',
   cardBackgroundOne: '#E6E6E7',
   cardBackgroundTwo: '#C6C7C7',
   blackText: '#000000',
   whiteText: '#E6E6E7',
+  greyText: '#7d7d7dff',
   error: '#991B1B',
+  errorAccent: '#B91C1C',
   testing: '#444',
 }
 export const SIZE = {
@@ -49,6 +55,7 @@ export const globalStyles = StyleSheet.create({
     width: '100%',
     height: '100%',
     padding: '10',
+    fontFamily: FONTS.regular,
   },
   authContainer: {
     flex: 1,
@@ -80,6 +87,13 @@ export const globalStyles = StyleSheet.create({
     fontFamily: FONTS.bold,
     fontSize: FONTS.size.lg,
   },
+  h4: {
+    fontFamily: FONTS.bold,
+    fontSize: FONTS.size.md,
+  },
+  subtitle: {
+    fontSize: FONTS.size.lg,
+  },
   caption: {
     fontFamily: FONTS.italic,
     fontSize: FONTS.size.sm,
@@ -95,6 +109,7 @@ export const globalStyles = StyleSheet.create({
 
   customButtonText: {
     color: COLORS.whiteText,
+    marginHorizontal: 10,
     fontSize: 16,
     fontWeight: 'bold',
   },

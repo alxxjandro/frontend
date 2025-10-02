@@ -1,20 +1,24 @@
 import { useState } from 'react'
-import { View, Text, TouchableOpacity, Image } from 'react-native'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from 'react-native'
 import { router } from 'expo-router'
 import { COLORS, FONTS, globalStyles } from '../../styles/globalStyles'
-import InputField from '../../components/inputField'
-import PrimaryButton from '../../components/primaryButton'
+import CustomInput from '../../components/customInput'
+import CustomButton from '../../components/customButton'
 
-// Credenciales hardcodeadas
-const CORRECT_USER = 'alonso'
-const CORRECT_PASS = 'bebe'
+const CORRECT_USER = 'admin'
+const CORRECT_PASS = 'admin'
 
 export default function LoginScreen() {
   const [user, setUser] = useState('')
   const [password, setPassword] = useState('')
   const [showError, setShowError] = useState(false)
-
-  const canContinue = user.trim().length > 0 && password.trim().length > 0
 
   const handleLogin = () => {
     if (user === CORRECT_USER && password === CORRECT_PASS) {
@@ -25,58 +29,67 @@ export default function LoginScreen() {
     }
   }
 
-  return (
-    <View
-      style={[
-        globalStyles.authContainer,
-        { justifyContent: 'center', alignItems: 'center' },
-      ]}
-    >
-      <View style={{ width: '100%', maxWidth: 360, paddingHorizontal: 14 }}>
-        {/* LOGO */}
-        <View style={{ alignItems: 'center', marginBottom: 18 }}>
-          <Image
-            source={require('../../assets/logo.jpg')}
-            style={{ width: 140, height: 140, resizeMode: 'contain' }}
-          />
-        </View>
-        {/* Título */}
-        <Text
-          style={{
-            fontFamily: FONTS.bold,
-            fontSize: FONTS.size.xl,
-            color: COLORS.primaryBlue,
-            marginBottom: 6,
-          }}
-        >
-          Iniciar sesión
-        </Text>
+  const handleOutsidePress = () => {
+    Keyboard.dismiss()
+  }
 
-        {/* Subtítulo */}
-        <Text
+  return (
+    <TouchableWithoutFeedback onPress={handleOutsidePress}>
+      <View
+        style={[
+          globalStyles.authContainer,
+          { justifyContent: 'center', alignItems: 'center' },
+        ]}
+      >
+        <View
           style={{
-            fontFamily: FONTS.regular,
-            fontSize: FONTS.size.sm,
-            color: COLORS.greyBorder,
-            marginBottom: 18,
+            width: '100%',
+            height: '85%',
+            marginVertical: 20,
+            paddingVertical: 50,
+            maxWidth: 332,
           }}
         >
-          ¿No tienes una cuenta?{' '}
+          <View style={{ alignItems: 'center', marginBottom: 18 }}>
+            <Image
+              source={require('../../assets/logo.jpg')}
+              style={{ width: 140, height: 140, resizeMode: 'contain' }}
+            />
+          </View>
+
+          <Text
+            style={{
+              fontFamily: FONTS.bold,
+              fontSize: FONTS.size.xl,
+              color: COLORS.primaryBlue,
+              marginBottom: 6,
+            }}
+          >
+            Iniciar sesión
+          </Text>
+
           <Text
             style={{
               fontFamily: FONTS.regular,
               fontSize: FONTS.size.sm,
-              color: COLORS.primaryBlue,
-              textDecorationLine: 'underline',
+              color: COLORS.greyText,
+              marginBottom: 18,
             }}
           >
-            Solicita una
+            ¿No tienes una cuenta?{' '}
+            <Text
+              style={{
+                fontFamily: FONTS.regular,
+                fontSize: FONTS.size.sm,
+                color: COLORS.primaryBlue,
+                textDecorationLine: 'underline',
+              }}
+            >
+              Solicita una
+            </Text>
           </Text>
-        </Text>
 
-        {/* Usuario */}
-        <View style={{ marginBottom: 14 }}>
-          <InputField
+          <CustomInput
             label="Usuario"
             placeholder="Usuario"
             value={user}
@@ -84,13 +97,10 @@ export default function LoginScreen() {
               setUser(t)
               if (showError) setShowError(false)
             }}
-            labelStyle={{ color: COLORS.primaryBlue, fontFamily: FONTS.bold }}
+            error={showError}
           />
-        </View>
 
-        {/* Contraseña */}
-        <View style={{ marginBottom: 6 }}>
-          <InputField
+          <CustomInput
             label="Contraseña"
             placeholder="Contraseña"
             value={password}
@@ -98,49 +108,51 @@ export default function LoginScreen() {
               setPassword(t)
               if (showError) setShowError(false)
             }}
-            labelStyle={{ color: COLORS.primaryBlue, fontFamily: FONTS.bold }}
-            secure
+            secureTextEntry
             error={showError}
           />
+
+          {/* Olvidaste contraseña */}
+          <TouchableOpacity activeOpacity={0.8}>
+            <Text
+              style={{
+                fontFamily: FONTS.regular,
+                fontSize: FONTS.size.xs,
+                color: COLORS.greyText,
+                textDecorationLine: 'underline',
+                marginTop: 8,
+                marginBottom: 18,
+              }}
+            >
+              ¿Olvidaste la contraseña?
+            </Text>
+          </TouchableOpacity>
+
+          {/* Botón */}
+          <CustomButton
+            title="Iniciar sesión"
+            onPress={handleLogin}
+            width={332}
+            borderRadius={4}
+            backgroundColor={COLORS.primaryBlue}
+          />
+
+          {/* Error */}
+          {showError && (
+            <Text
+              style={{
+                textAlign: 'center',
+                marginTop: 8,
+                fontFamily: FONTS.regular,
+                fontSize: FONTS.size.xs,
+                color: COLORS.error,
+              }}
+            >
+              Usuario o contraseña incorrecta
+            </Text>
+          )}
         </View>
-
-        {/* ¿Olvidaste la contraseña? */}
-        <TouchableOpacity activeOpacity={0.8}>
-          <Text
-            style={{
-              fontFamily: FONTS.regular,
-              fontSize: FONTS.size.xs,
-              color: COLORS.greyBorder,
-              textDecorationLine: 'underline',
-              marginBottom: 18,
-            }}
-          >
-            ¿Olvidaste la contraseña?
-          </Text>
-        </TouchableOpacity>
-
-        {/* Botón */}
-        <PrimaryButton
-          title="Iniciar sesión"
-          onPress={handleLogin}
-          disabled={!canContinue}
-        />
-
-        {/* Error */}
-        {showError && (
-          <Text
-            style={{
-              textAlign: 'center',
-              marginTop: 8,
-              fontFamily: FONTS.regular,
-              fontSize: FONTS.size.xs,
-              color: COLORS.error,
-            }}
-          >
-            Usuario o contraseña incorrecta
-          </Text>
-        )}
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   )
 }

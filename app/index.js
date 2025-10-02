@@ -1,166 +1,141 @@
-import { View, Text, Button } from 'react-native'
+import { View, Text } from 'react-native'
 import { Link } from 'expo-router'
 import { globalStyles } from '../styles/globalStyles'
 import CustomButton from '../components/customButton'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
-import { Ionicons } from '@expo/vector-icons'
-import CustomActionButton from '../components/customAccionButton'
 import CustomSquareButton from '../components/customSquareButton'
-import CusstomBottomBar from '../components/customBottomBar'
+import CustomBottomBar from '../components/customBottomBar'
 import { SIZE, COLORS } from '../styles/globalStyles'
-import CustomPFP from '../components/customPFP'
+import { StyleSheet } from 'react-native'
+import UserIcon from '../components/userIcon'
 
 export default function Page() {
-  let name = 'Jorge Torres'
-  let firstN = name.split(' ')[0]
-  let lastN = name.split(' ')[1]
-  return (
-    <View
-      style={{
-        backgroundColor: '#FBFBFB',
-        flex: 1,
-      }}
-    >
-      <View
-        style={{
-          gap: '1rem',
-          flexDirection: 'column',
-          marginLeft: 29,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            marginTop: 52,
-            gap: 8,
-          }}
-        >
-          <CustomPFP
-            first={firstN}
-            last={lastN}
-            width={36}
-            height={36}
-            fontSize={SIZE.xs}
-            fontColor={COLORS.whiteText}
-            colorBG={COLORS.primaryBlue}
-          />
+  const name = 'Jorge Torres'
 
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={[globalStyles.body]}>
           <View
             style={{
-              flexDirection: 'colum',
+              height: '100%',
+              gap: '30',
             }}
           >
-            <Text
-              style={{
-                fontSize: SIZE.sm,
-                color: '#000000',
-                fontWeight: '500',
-              }}
-            >
-              Bienvenido 👋
-            </Text>
-            <Text
-              style={{
-                fontSize: SIZE.xl,
-                color: '#000000',
-                fontWeight: '500',
-              }}
-            >
-              {name}
-            </Text>
+            <View style={styles.userHeader}>
+              <UserIcon name="Jorge Torres" bgColor={COLORS.primaryBlue15} />
+              <View
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 0,
+                }}
+              >
+                <Text>Bienvenido 👋</Text>
+                <Text style={globalStyles.h2}>{name}</Text>
+              </View>
+            </View>
+
+            <View>
+              <Text style={globalStyles.subtitle}>Accesos rápidos:</Text>
+              <View style={styles.squreBtnsContainer}>
+                <Link href="/nuevaEntrada" asChild>
+                  <CustomSquareButton
+                    title="Registrar entrada"
+                    subtitle="7 entradas creadas hoy"
+                  />
+                </Link>
+
+                <Link href="/nuevaSalida" asChild>
+                  <CustomSquareButton
+                    title="Registrar salida"
+                    subtitle="4 salidas creadas hoy"
+                    icon="exit-outline"
+                    borderColor={COLORS.primaryBlue}
+                    backgroundColor={COLORS.primaryBlue15}
+                  />
+                </Link>
+
+                <Link href="/inventario" asChild>
+                  <CustomSquareButton
+                    title="Mi inventario"
+                    subtitle="79 productos"
+                    icon="archive-outline"
+                    borderColor={COLORS.brownAccent}
+                    backgroundColor={COLORS.brownAccent15}
+                  />
+                </Link>
+
+                <Link href="/reportes" asChild>
+                  <CustomSquareButton
+                    title="Gestionar reportes"
+                    subtitle="11 reportes disponibles"
+                    icon="book-outline"
+                    borderColor={COLORS.yellowAccent}
+                    backgroundColor={COLORS.yellowAccent15}
+                  />
+                </Link>
+              </View>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              <Text style={globalStyles.subtitle}>Acciones:</Text>
+              <CustomButton
+                iconLeft="open-outline"
+                colorLeft={COLORS.primaryBlue}
+                colorRight={COLORS.blackText}
+                textColor={COLORS.blackText}
+                backgroundColor={COLORS.cardBackgroundOne}
+                title="Ver reporte de salidas"
+                borderRadius={8}
+                textSize={SIZE.sm}
+                iconRight="chevron-forward"
+                expand="right"
+              />
+              <CustomButton
+                iconLeft="warning-outline"
+                colorLeft={COLORS.yellowAccent}
+                colorRight={COLORS.blackText}
+                textColor={COLORS.blackText}
+                backgroundColor={COLORS.cardBackgroundOne}
+                title="Stock bajo"
+                borderRadius={8}
+                textSize={SIZE.sm}
+                iconRight="chevron-forward"
+                expand="right"
+              />
+              <CustomButton
+                iconLeft="alert-circle-outline"
+                colorLeft={COLORS.errorAccent}
+                colorRight={COLORS.blackText}
+                textColor={COLORS.blackText}
+                backgroundColor={COLORS.cardBackgroundOne}
+                title="Por caducar"
+                borderRadius={8}
+                textSize={SIZE.sm}
+                iconRight="chevron-forward"
+                expand="right"
+              />
+            </View>
           </View>
         </View>
-        <Text style={{ fontSize: 16, color: '#000000', fontWeight: '500' }}>
-          Accesos rápidos:
-        </Text>
-        <View
-          style={{
-            gap: '1rem',
-            flexDirection: 'row',
-          }}
-        >
-          <Link href="/nuevaEntrada" asChild>
-            <CustomSquareButton
-              title="Registrar entrada"
-              subtitle="7 entradas creadas hoy"
-            />
-          </Link>
-          <Link href="/nuevaSalida" asChild>
-            <CustomSquareButton
-              title="Registrar salida"
-              subtitle="4 salidas creadas hoy"
-              icon="exit-outline"
-              borderColor={COLORS.primaryBlue}
-              backgroundColor="#d6e3eb"
-            />
-          </Link>
-        </View>
-        <View
-          style={{
-            gap: '1rem',
-            flexDirection: 'row',
-          }}
-        >
-          <Link href="/inventario" asChild>
-            <CustomSquareButton
-              title="Mi inventario"
-              subtitle="79 productos"
-              icon="archive-outline"
-              borderColor="#824917"
-              backgroundColor="#e3d8ce"
-            />
-          </Link>
-          <Link href="/reportes" asChild>
-            <CustomSquareButton
-              title="Gestionar reportes"
-              subtitle="11 reportes disponibles"
-              icon="book-outline"
-              borderColor="#FFBF00"
-              backgroundColor="#fcefc9"
-            />
-          </Link>
-        </View>
-        <Text
-          style={{
-            fontSize: 16,
-            color: '#000000',
-            fontWeight: '500',
-            marginTop: 48,
-            marginBottom: 36,
-          }}
-        >
-          Acciones:
-        </Text>
-        <View style={{ marginBottom: 66, gap: 8 }}>
-          <Link href="/reportes" asChild>
-            <CustomActionButton
-              title="Ver reporte de salidas"
-              iconLeft="open-outline"
-              size={SIZE.md}
-              color={COLORS.primaryBlue}
-              iconRight="chevron-forward"
-            />
-          </Link>
-          <CustomActionButton
-            title="Stock bajo"
-            iconLeft="warning-outline"
-            size={SIZE.md}
-            color="#E78128"
-            iconRight="chevron-forward"
-          />
-
-          <CustomActionButton
-            title="Por caducar"
-            iconLeft="alert-circle-outline"
-            size={SIZE.md}
-            color="#B91C1C"
-            iconRight="chevron-forward"
-          />
-        </View>
-      </View>
-      <View style={{}}>
-        <CusstomBottomBar activeBtn={'inicio'} />
-      </View>
-    </View>
+      </SafeAreaView>
+      <CustomBottomBar activeBtn={'inicio'} />
+    </SafeAreaProvider>
   )
 }
+
+const styles = StyleSheet.create({
+  userHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  squreBtnsContainer: {
+    marginTop: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    width: 332,
+  },
+})

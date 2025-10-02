@@ -8,9 +8,16 @@ import { COLORS, FONTS } from '../styles/globalStyles'
  * @param {Object} props - Component props.
  * @param {string} props.name - Full name of the user (used to extract initials).
  * @param {number} [props.size=48] - Diameter of the circle in pixels.
+ * @param {string} [props.backgroundColor] - Background color (optional).
+ * @param {string} [props.color] - Text color (optional).
  * @returns {JSX.Element} A styled circle with user initials inside.
  */
-export default function UserIcon({ name = '', size = 48 }) {
+export default function UserIcon({
+  name = '',
+  size = 48,
+  backgroundColor = COLORS.primaryBlue,
+  color = COLORS.whiteText,
+}) {
   const initials = name
     .split(' ')
     .map((n) => n[0])
@@ -25,22 +32,28 @@ export default function UserIcon({ name = '', size = 48 }) {
           width: size,
           height: size,
           borderRadius: size / 2,
+          ...(backgroundColor ? { backgroundColor } : {}),
         },
       ]}
     >
-      <Text style={[styles.text, { fontSize: size * 0.4 }]}>{initials}</Text>
+      <Text
+        style={[
+          styles.text,
+          { fontSize: size * 0.4, ...(color ? { color } : {}) },
+        ]}
+      >
+        {initials}
+      </Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   icon: {
-    backgroundColor: COLORS.testing,
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
-    color: COLORS.whiteText,
     fontFamily: FONTS.bold,
   },
 })

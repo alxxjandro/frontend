@@ -11,6 +11,7 @@ import { COLORS, FONTS } from '../styles/globalStyles'
  * @param {string} props.placeholder - Placeholder text.
  * @param {string} [props.value] - Current input value.
  * @param {(text: string) => void} [props.onChangeText] - Callback for input change.
+ * @param {boolean} [props.error] - If true, styles input with error state.
  * @returns {JSX.Element} Styled input with label.
  */
 export default function CustomInput({
@@ -18,19 +19,28 @@ export default function CustomInput({
   placeholder,
   value,
   onChangeText,
+  error = false,
 }) {
   const [isFocused, setIsFocused] = useState(false)
 
   return (
-    <View style={styles}>
-      <Text style={styles.label}>{label}</Text>
+    <View>
+      <Text style={[styles.label, error && { color: COLORS.error }]}>
+        {label}
+      </Text>
       <TextInput
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
         style={[
           styles.input,
-          { borderColor: isFocused ? COLORS.primaryBlue : COLORS.greyBorder },
+          {
+            borderColor: error
+              ? COLORS.error
+              : isFocused
+                ? COLORS.primaryBlue
+                : COLORS.greyBorder,
+          },
         ]}
         placeholderTextColor={COLORS.greyBorder}
         onFocus={() => setIsFocused(true)}
@@ -57,5 +67,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.sm,
     color: COLORS.blackText,
+  },
+  errorText: {
+    fontFamily: FONTS.regular,
+    fontSize: FONTS.size.xs,
+    color: COLORS.error,
+    marginTop: 4,
   },
 })

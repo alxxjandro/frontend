@@ -75,11 +75,14 @@ export default function nuevoUsuario() {
                 onPress={() => router.navigate('/usuarios')}
                 outlined={true}
                 borderRadius={4}
+                backgroundColor={COLORS.primaryBlue}
+                textColor={COLORS.primaryBlue}
               />
               <CustomButton
                 title="Crear Usuario"
                 onPress={() => router.navigate('/usuarios')}
                 borderRadius={4}
+                backgroundColor={COLORS.primaryBlue}
               />
             </View>
           </View>

@@ -1,20 +1,19 @@
 import { Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { SIZE, COLORS, FONTS } from '../styles/globalStyles'
+import { SIZE, COLORS, FONTS, globalStyles } from '../styles/globalStyles'
 
 export default function CustomFrameButton({
   borderColor = COLORS.primaryGreen,
   backgroundColor = '#ecf3d9',
   icon = 'cube-outline',
-  title = 'Hola Mundo',
-  subtitle = 'subtexto',
+  title = '',
+  subtitle = '',
   onPress,
 }) {
   return (
     <TouchableOpacity
       onPress={onPress}
       style={{
-        flexDirection: 'column',
         backgroundColor,
         borderWidth: 2,
         borderColor,
@@ -25,8 +24,8 @@ export default function CustomFrameButton({
     >
       <View
         style={{
-          width: 41,
-          height: 41,
+          width: 40,
+          height: 40,
           borderRadius: 41 / 2,
           justifyContent: 'center',
           alignItems: 'center',
@@ -36,8 +35,7 @@ export default function CustomFrameButton({
           marginBottom: 22,
         }}
       >
-        {' '}
-        <Ionicons name={icon} size={SIZE.xxl} color={COLORS.whiteText} />{' '}
+        <Ionicons name={icon} size={SIZE.xxl} color={COLORS.whiteText} />
       </View>
 
       <View
@@ -46,16 +44,7 @@ export default function CustomFrameButton({
           marginBottom: 12,
         }}
       >
-        <Text
-          style={{
-            fontSize: SIZE.md,
-            color: COLORS.white,
-            fontFamily: FONTS.regular,
-            fontWeight: '700',
-          }}
-        >
-          {title}
-        </Text>
+        <Text style={globalStyles.h4}>{title}</Text>
         <Text
           style={{
             fontSize: SIZE.xs,

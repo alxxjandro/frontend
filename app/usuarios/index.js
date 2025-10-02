@@ -2,6 +2,7 @@ import { Text, View } from 'react-native'
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 import { globalStyles, COLORS } from '../../styles/globalStyles'
 import CustomButton from '../../components/customButton'
+import CustomBottomBar from '../../components/customBottomBar'
 import UserCard from '../../components/userCard'
 import { StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
@@ -26,6 +27,7 @@ export default function Usuarios() {
               iconRight="add"
               width={332}
               borderRadius={4}
+              backgroundColor={COLORS.primaryBlue}
             />
           </View>
 
@@ -66,6 +68,7 @@ export default function Usuarios() {
           </View>
         </View>
       </SafeAreaView>
+      <CustomBottomBar activeBtn={'usuarios'} />
     </SafeAreaProvider>
   )
 }
