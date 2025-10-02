@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router'
 import CustomIcon from '../../../components/customIcon'
 import CustomInput from '../../../components/customInput'
 import CustomButton from '../../../components/customButton'
-import CustomDropdown from '../../../components/customDropdown'
+import CustomDropdown from '../../../components/CustomDropdown'
 
 export default function nuevoUsuario() {
   const router = useRouter()
