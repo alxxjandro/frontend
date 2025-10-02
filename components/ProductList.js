@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { View, Text, StyleSheet } from 'react-native'
+import { COLORS, FONTS } from '../styles/globalStyles'
+import AddProductButton from './addProductButton'
 
 export default function ProductList({
   title = 'Productos de la salida',
@@ -7,6 +8,7 @@ export default function ProductList({
   onAddProduct,
   addButtonText = 'Agregar un producto del inventario +',
   emptyMessage = 'Esta salida no cuenta con ningún producto...',
+  navigateTo = '/inventario',
 }) {
   return (
     <View>
@@ -26,9 +28,12 @@ export default function ProductList({
         </View>
       )}
 
-      <TouchableOpacity style={styles.addButton} onPress={onAddProduct}>
-        <Text style={styles.addButtonText}>{addButtonText}</Text>
-      </TouchableOpacity>
+      <AddProductButton
+        text={addButtonText}
+        onPress={onAddProduct}
+        navigateTo={navigateTo}
+        mode="select"
+      />
     </View>
   )
 }
@@ -67,18 +72,5 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.md,
     color: COLORS.blackText,
-  },
-  addButton: {
-    backgroundColor: COLORS.primaryBlue,
-    padding: 12,
-    borderRadius: 6,
-    marginTop: 15,
-  },
-  addButtonText: {
-    color: COLORS.whiteText,
-    textAlign: 'center',
-    fontFamily: FONTS.regular,
-    fontSize: FONTS.size.md,
-    fontWeight: '500',
   },
 })

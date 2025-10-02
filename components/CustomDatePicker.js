@@ -1,71 +1,51 @@
+import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Calendar } from 'react-native-calendars'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { COLORS, FONTS } from '../styles/globalStyles'
 
 export default function CustomDatePicker({
   label,
-  date,
   isVisible,
   onDateSelect,
   onToggle,
   onCancel,
 }) {
+  const [selected, setSelected] = useState('')
+
   const handleDayPress = (day) => {
-    const formatted =
-      day.day.toString().padStart(2, '0') +
-      '/' +
-      day.month.toString().padStart(2, '0') +
-      '/' +
-      day.year
-    onDateSelect(formatted)
+    setSelected(day.dateString)
+    onDateSelect(day.dateString)
   }
 
   return (
-    <View>
+    <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TouchableOpacity style={styles.input} onPress={onToggle}>
-        <Text style={styles.dateText}>{date}</Text>
+        <Text style={styles.dateText}>{selected || 'Seleccionar fecha'}</Text>
       </TouchableOpacity>
 
       {isVisible && (
         <View style={styles.calendarContainer}>
           <Calendar
             onDayPress={handleDayPress}
-            markedDates={{
-              [date.split('/').reverse().join('-')]: {
-                selected: true,
-                selectedColor: COLORS.primaryBlue,
-              },
-            }}
-            monthFormat={'MMMM yyyy'}
-            firstDay={1}
+            markedDates={
+              selected
+                ? {
+                    [selected]: {
+                      selected: true,
+                      selectedColor: COLORS.primaryBlue,
+                    },
+                  }
+                : {}
+            }
             theme={{
               selectedDayBackgroundColor: COLORS.primaryBlue,
-              todayTextColor: '#ff0000',
+              todayTextColor: COLORS.primaryBlue,
               arrowColor: COLORS.primaryBlue,
               textDayFontWeight: '500',
               textMonthFontWeight: 'bold',
               textDayHeaderFontWeight: '600',
-              textDayHeaderFontSize: 14,
-              textDayFontFamily: FONTS.regular,
-              textMonthFontFamily: FONTS.bold,
-              textDayHeaderFontFamily: FONTS.bold,
             }}
-            dayNames={['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']}
-            monthNames={[
-              'Enero',
-              'Febrero',
-              'Marzo',
-              'Abril',
-              'Mayo',
-              'Junio',
-              'Julio',
-              'Agosto',
-              'Septiembre',
-              'Octubre',
-              'Noviembre',
-              'Diciembre',
-            ]}
           />
           <TouchableOpacity onPress={onCancel} style={styles.cancelButton}>
             <Text style={styles.cancelButtonText}>Cancelar</Text>
@@ -77,10 +57,14 @@ export default function CustomDatePicker({
 }
 
 const styles = StyleSheet.create({
+  container: {
+    marginBottom: 10,
+    zIndex: 1000,
+  },
   label: {
     fontFamily: FONTS.bold,
     fontSize: FONTS.size.md,
-    marginTop: 10,
+    marginBottom: 5,
     color: COLORS.primaryBlue,
   },
   input: {
@@ -88,8 +72,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.greyBorder,
     borderRadius: 6,
     padding: 12,
-    marginTop: 5,
     backgroundColor: COLORS.background,
+    minHeight: 50,
+    justifyContent: 'center',
   },
   dateText: {
     fontFamily: FONTS.regular,
@@ -97,13 +82,17 @@ const styles = StyleSheet.create({
     color: COLORS.blackText,
   },
   calendarContainer: {
-    marginTop: 10,
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 1500,
     borderWidth: 1,
     borderColor: COLORS.greyBorder,
     borderRadius: 8,
     padding: 10,
     backgroundColor: COLORS.background,
-    elevation: 4,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,

@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { useState } from 'react'
 import { Ionicons } from '@expo/vector-icons'
+import { COLORS, FONTS } from '../../../styles/globalStyles'
 
 const styles = StyleSheet.create({
   overlay: {
@@ -19,20 +20,21 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: 220,
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.whiteText,
     borderRadius: 12,
     elevation: 5,
-    shadowColor: '#000000',
+    shadowColor: COLORS.blackText,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
   title: {
     fontWeight: 'bold',
-    fontSize: 16,
-    color: '#00568F',
+    fontSize: FONTS.size.md,
+    color: COLORS.primaryBlue,
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: FONTS.bold,
   },
   optionContainer: {
     flexDirection: 'row',
@@ -44,21 +46,31 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: '#00568F',
+    borderColor: COLORS.primaryBlue,
     borderRadius: 4,
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#00568F',
+    backgroundColor: COLORS.primaryBlue,
   },
   optionText: {
-    fontSize: 14,
-    color: '#000000',
+    fontSize: FONTS.size.sm,
+    color: COLORS.blackText,
     flex: 1,
+    fontFamily: FONTS.regular,
   },
 })
+
+/**
+ * Filter Modal Component - Shows filterable options in a modal overlay
+ * @param {boolean} visible - Whether the modal is visible
+ * @param {Function} onClose - Callback to close the modal
+ * @param {string} title - Modal title
+ * @param {Array<string>} options - Array of filter options
+ * @returns {JSX.Element} Filter modal component
+ */
 
 export default function FilterModal({ visible, onClose, title, options }) {
   const [selectedOptions, setSelectedOptions] = useState(
@@ -68,6 +80,10 @@ export default function FilterModal({ visible, onClose, title, options }) {
     }, {})
   )
 
+  /**
+   * Toggles option selection state
+   * @param {string} option - Option to toggle
+   */
   const toggleOption = (option) => {
     setSelectedOptions((prev) => ({
       ...prev,
@@ -75,12 +91,24 @@ export default function FilterModal({ visible, onClose, title, options }) {
     }))
   }
 
+  /**
+   * Renders checkbox component
+   * @param {boolean} isSelected - Whether option is selected
+   * @returns {JSX.Element} Checkbox component
+   */
   const renderCheckbox = (isSelected) => (
     <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-      {isSelected && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+      {isSelected && (
+        <Ionicons name="checkmark" size={14} color={COLORS.whiteText} />
+      )}
     </View>
   )
 
+  /**
+   * Renders individual option with checkbox
+   * @param {string} option - Option text
+   * @returns {JSX.Element} Option component
+   */
   const renderOption = (option) => (
     <TouchableOpacity
       key={option}

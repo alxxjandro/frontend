@@ -1,14 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { globalStyles, COLORS } from '../../../styles/globalStyles'
+import { globalStyles, COLORS, FONTS } from '../../../styles/globalStyles'
 import ExtraButton from '../../../components/extraButton'
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    paddingTop: 10,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -31,9 +26,6 @@ const styles = StyleSheet.create({
     fontSize: 50,
     marginEnd: 8,
   },
-  productName: {
-    ...globalStyles.h1,
-  },
   productDetails: {
     fontSize: 14,
     marginTop: 4,
@@ -44,18 +36,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sectionTitle: {
-    ...globalStyles.h2,
-    color: '#00568F',
+    fontSize: FONTS.size.xl,
+    fontFamily: FONTS.bold,
+    color: COLORS.primaryBlue,
     marginBottom: 10,
   },
   entryCard: {
-    backgroundColor: '#E6E6E7',
+    backgroundColor: COLORS.cardBackgroundOne,
     padding: 10,
     borderRadius: 8,
     marginVertical: 5,
-  },
-  entryTitle: {
-    ...globalStyles.h3,
   },
   entryQuantity: {
     fontSize: 14,
@@ -68,6 +58,17 @@ const SAMPLE_ENTRIES = [
   { date: '6 de septiembre', quantity: '18 unidades' },
   { date: '5 de septiembre', quantity: '12 unidades' },
 ]
+
+/**
+ * Product Detail Screen - Shows detailed information about a specific product
+ * @param {string} productName - Name of the product
+ * @param {string} emoji - Product emoji icon
+ * @param {string} category - Product category
+ * @param {number} quantity - Product quantity
+ * @param {string} unit - Unit of measurement
+ * @param {Array} entries - Array of product entries
+ * @returns {JSX.Element} Product detail screen component
+ */
 
 export default function ProductDetailScreen({
   productName,
@@ -82,19 +83,21 @@ export default function ProductDetailScreen({
   return (
     <View
       style={[
-        styles.container,
         globalStyles.container,
-        { justifyContent: 'flex-start' },
+        {
+          flex: 1,
+          backgroundColor: COLORS.background,
+          justifyContent: 'flex-start',
+          paddingTop: 10,
+        },
       ]}
     >
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={globalStyles.h1}>Detalle producto</Text>
-        </View>
+        <Text style={globalStyles.h1}>Detalle producto</Text>
         <ExtraButton
           icon="chevron-back"
-          color="black"
+          color={COLORS.blackText}
           style={styles.backButton}
           size={30}
           onPress={() => router.push('/inventario')}
@@ -104,7 +107,7 @@ export default function ProductDetailScreen({
       {/* Product Info */}
       <View style={styles.productInfo}>
         <Text style={styles.emoji}>{emoji}</Text>
-        <Text style={styles.productName}>{productName}</Text>
+        <Text style={globalStyles.h1}>{productName}</Text>
         <Text style={styles.productDetails}>
           {category} • {quantity} {unit}
         </Text>
@@ -116,7 +119,7 @@ export default function ProductDetailScreen({
 
         {entries.map((entry, index) => (
           <View key={index} style={styles.entryCard}>
-            <Text style={styles.entryTitle}>Entrada del {entry.date}</Text>
+            <Text style={globalStyles.h3}>Entrada del {entry.date}</Text>
             <Text style={styles.entryQuantity}>{entry.quantity}</Text>
           </View>
         ))}

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Link } from 'expo-router'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { COLORS, FONTS } from '../styles/globalStyles'
 
 export default function ScreenHeader({
   title,
