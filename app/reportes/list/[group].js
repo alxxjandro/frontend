@@ -1,58 +1,88 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   View,
   Text,
+  TouchableOpacity,
   StyleSheet,
   SectionList,
-  TouchableOpacity,
 } from 'react-native'
-import { useRouter } from 'expo-router'
-import ScreenHeader from '../../components/screenHeader'
-import CustomDropdown from '../../components/CustomDropdown'
-import { COLORS, FONTS } from '../../styles/globalStyles'
-import { mockReports } from './data/mockData'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import ScreenHeader from '../../../components/screenHeader'
+import CustomDropdown from '../../../components/CustomDropdown'
+import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { mockReports } from '../data/mockData'
+
+// Month names in Spanish
+const MONTH_NAMES = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
 
 /**
- * Main reports screen displaying list of available reports
- * @returns {JSX.Element} ReportesScreen component
+ * Group reports screen showing daily reports for a specific month
+ * @returns {JSX.Element} Group component
  */
-export default function ReportesScreen() {
+const Group = () => {
   const router = useRouter()
+  const { group } = useLocalSearchParams() // e.g. "2023-01"
   const [reportType, setReportType] = useState(null)
   const [sortOrder, setSortOrder] = useState(null)
 
-  const reportTypeOptions = ['Anual', 'Mensual', 'Diario']
+  const reportTypeOptions = ['Entrada', 'Salida']
   const sortOptions = ['Más reciente', 'Más antiguo']
 
-  // Filter reports (excluding daily reports for main view)
-  const reportsToShow = mockReports.filter((r) => r.type !== 'diario')
+  // Get month name for title
+  const groupTitle = useMemo(() => {
+    if (!group) return 'Reportes'
+    const [year, month] = group.split('-')
+    const monthIndex = parseInt(month, 10) - 1
+    return `${MONTH_NAMES[monthIndex]} ${year}`
+  }, [group])
+
+  // Filter reports to show only daily reports for this month
+  const reportsToShow = useMemo(() => {
+    if (!group) return []
+    const [year, month] = group.split('-')
+    return mockReports.filter((r) => {
+      if (!r.date) return false
+      const date = new Date(r.date)
+      return (
+        r.type === 'diario' &&
+        date.getFullYear().toString() === year &&
+        String(date.getMonth() + 1).padStart(2, '0') === month
+      )
+    })
+  }, [group])
 
   /**
    * Handle navigation to specific report
    * @param {Object} report - Report object to navigate to
    */
   const handleReportPress = (report) => {
-    if (report.type === 'mensual') {
-      const reportDate = new Date(report.date)
-      const group = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}`
-      router.push(`/reportes/list/${group}`)
-    } else {
-      router.push(
-        `/reportes/${report.id}?name=${encodeURIComponent(report.name)}`
-      )
-    }
+    router.push(
+      `/reportes/${report.id}?name=${encodeURIComponent(report.name)}`
+    )
   }
 
   // Group reports by year
   const groupedData = reportsToShow.reduce((acc, report) => {
     const reportDate = new Date(report.date)
-    const groupTitle = reportDate.getFullYear().toString()
-
-    const existingGroup = acc.find((group) => group.title === groupTitle)
+    const year = reportDate.getFullYear().toString()
+    const existingGroup = acc.find((g) => g.title === year)
     if (existingGroup) {
       existingGroup.data.push(report)
     } else {
-      acc.push({ title: groupTitle, data: [report] })
+      acc.push({ title: year, data: [report] })
     }
     return acc
   }, [])
@@ -63,36 +93,15 @@ export default function ReportesScreen() {
    * @param {number} index - Item index
    * @returns {JSX.Element} Report item component
    */
-  const renderReportItem = ({ item, index }) => {
-    // Calculate daily reports count for monthly reports
-    let dailyCount = 0
-    if (item.type === 'mensual') {
-      const reportDate = new Date(item.date)
-      const year = reportDate.getFullYear()
-      const month = reportDate.getMonth()
-
-      dailyCount = mockReports.filter((r) => {
-        if (r.type !== 'diario') return false
-        const d = new Date(r.date)
-        return d.getFullYear() === year && d.getMonth() === month
-      }).length
-    }
-
-    return (
-      <TouchableOpacity
-        onPress={() => handleReportPress(item)}
-        style={[styles.reportButton, index % 2 === 0 && styles.reportButtonAlt]}
-      >
-        <View style={styles.reportContent}>
-          <Text style={styles.reportName}>{item.name}</Text>
-          {item.type === 'mensual' && (
-            <Text style={styles.reportCount}>{dailyCount} reportes</Text>
-          )}
-        </View>
-        <Text style={styles.arrowIcon}>›</Text>
-      </TouchableOpacity>
-    )
-  }
+  const renderReportItem = ({ item, index }) => (
+    <TouchableOpacity
+      onPress={() => handleReportPress(item)}
+      style={[styles.reportButton, index % 2 === 0 && styles.reportButtonAlt]}
+    >
+      <Text style={styles.reportName}>{item.name}</Text>
+      <Text style={styles.reportDate}>{item.date}</Text>
+    </TouchableOpacity>
+  )
 
   /**
    * Render section header
@@ -105,9 +114,7 @@ export default function ReportesScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Reportes" showBackButton={true} />
-
-      <Text style={styles.countText}>{reportsToShow.length} Reportes</Text>
+      <ScreenHeader title={groupTitle} />
 
       <View style={styles.filtersContainer}>
         <CustomDropdown
@@ -134,7 +141,9 @@ export default function ReportesScreen() {
         style={styles.reportsList}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No hay reportes disponibles.</Text>
+          <Text style={styles.emptyText}>
+            No hay reportes disponibles para este mes.
+          </Text>
         }
       />
     </View>
@@ -146,13 +155,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: COLORS.background,
-  },
-  countText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONTS.size.sm,
-    color: COLORS.blackText,
-    marginBottom: 10,
-    opacity: 0.7,
   },
   filtersContainer: {
     flexDirection: 'row',
@@ -183,26 +185,15 @@ const styles = StyleSheet.create({
   reportButtonAlt: {
     backgroundColor: '#E6E6E7',
   },
-  reportContent: {
-    flex: 1,
-  },
   reportName: {
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.md,
     color: COLORS.blackText,
   },
-  reportCount: {
+  reportDate: {
     fontFamily: FONTS.light,
     fontSize: FONTS.size.sm,
     color: COLORS.blackText,
-    opacity: 0.7,
-    marginTop: 4,
-  },
-  arrowIcon: {
-    fontFamily: FONTS.regular,
-    fontSize: 24,
-    color: COLORS.blackText,
-    opacity: 0.5,
   },
   separator: {
     height: 5,
@@ -214,3 +205,5 @@ const styles = StyleSheet.create({
     color: COLORS.blackText,
   },
 })
+
+export default Group

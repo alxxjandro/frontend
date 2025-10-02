@@ -1,13 +1,10 @@
-import { View, ScrollView, StatusBar } from 'react-native'
+import { View, ScrollView, StatusBar, StyleSheet } from 'react-native'
 import { useState } from 'react'
 import CustomButton from '../../components/customButton'
-import {
-  ScreenHeader,
-  CustomDropdown,
-  CustomDatePicker,
-  ProductList,
-} from './_components'
-import { nuevaSalidaStyles } from './_styles/nuevaSalidaStyles'
+import ScreenHeader from '../../components/screenHeader'
+import CustomDropdown from '../../components/CustomDropdown'
+import CustomDatePicker from '../../components/CustomDatePicker'
+import ProductList from '../../components/ProductList'
 import { COLORS } from '../../styles/globalStyles'
 
 export default function NuevaSalida() {
@@ -17,7 +14,7 @@ export default function NuevaSalida() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
-  const opcionesMotivo = ['Venta', 'Donación', 'Descarte']
+  const opcionesMotivo = ['Merma', 'Uso cocina', 'Uso personal']
 
   const handleMotivoSelect = (selectedMotivo) => {
     setMotivo(selectedMotivo)
@@ -29,22 +26,18 @@ export default function NuevaSalida() {
     setDatePickerVisibility(false)
   }
 
-  const handleAddProduct = () => {
-    setProductos([...productos, 'Producto nuevo'])
-  }
-
   const handleRegisterSalida = () => {
     // Logic for registering the salida
     console.log('Registering salida:', { fecha, motivo, productos })
   }
 
   return (
-    <View style={nuevaSalidaStyles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-      <View style={nuevaSalidaStyles.wrapper}>
-        <ScrollView contentContainerStyle={nuevaSalidaStyles.scrollContent}>
+      <View style={styles.wrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
-          <ScreenHeader title="Nueva salida" backRoute="/" />
+          <ScreenHeader title="Nueva salida" />
 
           {/* Dropdown de motivo */}
           <CustomDropdown
@@ -68,13 +61,13 @@ export default function NuevaSalida() {
           />
 
           {/* Product List */}
-          <ProductList products={productos} onAddProduct={handleAddProduct} />
+          <ProductList products={productos} />
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View style={nuevaSalidaStyles.fixedBottom}>
+        <View style={styles.fixedBottom}>
           <CustomButton
-            title="Registrar salida >>"
+            title="Registrar salida"
             onPress={handleRegisterSalida}
           />
         </View>
@@ -82,3 +75,24 @@ export default function NuevaSalida() {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  wrapper: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  fixedBottom: {
+    paddingVertical: 20,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.greyBorder,
+  },
+})
