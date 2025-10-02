@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Calendar } from 'react-native-calendars'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { COLORS, FONTS } from '../styles/globalStyles'
 
 export default function CustomDatePicker({
   label,

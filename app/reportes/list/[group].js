@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -7,15 +7,13 @@ import {
   SectionList,
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
 import ScreenHeader from '../../../components/screenHeader'
-import CustomFilter from '../_components/CustomFilter'
+import CustomDropdown from '../../../components/CustomDropdown'
+import { COLORS, FONTS } from '../../../styles/globalStyles'
 import { mockReports } from '../data/mockData'
 
-const Separator = () => <View style={{ height: 5 }} />
-
-// Meses en español
-const monthNames = [
+// Month names in Spanish
+const MONTH_NAMES = [
   'Enero',
   'Febrero',
   'Marzo',
@@ -30,18 +28,28 @@ const monthNames = [
   'Diciembre',
 ]
 
+/**
+ * Group reports screen showing daily reports for a specific month
+ * @returns {JSX.Element} Group component
+ */
 const Group = () => {
   const router = useRouter()
-  const { group } = useLocalSearchParams() // ej. "2023-01"
+  const { group } = useLocalSearchParams() // e.g. "2023-01"
+  const [reportType, setReportType] = useState(null)
+  const [sortOrder, setSortOrder] = useState(null)
 
-  // Obtener el nombre del mes para el título
+  const reportTypeOptions = ['Entrada', 'Salida']
+  const sortOptions = ['Más reciente', 'Más antiguo']
+
+  // Get month name for title
   const groupTitle = useMemo(() => {
     if (!group) return 'Reportes'
     const [year, month] = group.split('-')
     const monthIndex = parseInt(month, 10) - 1
-    return `${monthNames[monthIndex]} ${year}`
+    return `${MONTH_NAMES[monthIndex]} ${year}`
   }, [group])
 
+  // Filter reports to show only daily reports for this month
   const reportsToShow = useMemo(() => {
     if (!group) return []
     const [year, month] = group.split('-')
@@ -56,69 +64,88 @@ const Group = () => {
     })
   }, [group])
 
-  const handlePress = (report) => {
+  /**
+   * Handle navigation to specific report
+   * @param {Object} report - Report object to navigate to
+   */
+  const handleReportPress = (report) => {
     router.push(
       `/reportes/${report.id}?name=${encodeURIComponent(report.name)}`
     )
   }
 
+  // Group reports by year
   const groupedData = reportsToShow.reduce((acc, report) => {
     const reportDate = new Date(report.date)
     const year = reportDate.getFullYear().toString()
     const existingGroup = acc.find((g) => g.title === year)
-    if (existingGroup) existingGroup.data.push(report)
-    else acc.push({ title: year, data: [report] })
+    if (existingGroup) {
+      existingGroup.data.push(report)
+    } else {
+      acc.push({ title: year, data: [report] })
+    }
     return acc
   }, [])
 
-  const renderItem = ({ item, index }) => (
+  /**
+   * Render individual report item
+   * @param {Object} item - Report item
+   * @param {number} index - Item index
+   * @returns {JSX.Element} Report item component
+   */
+  const renderReportItem = ({ item, index }) => (
     <TouchableOpacity
-      onPress={() => handlePress(item)}
-      style={[styles.button, index % 2 === 0 ? styles.buttonAlt : {}]}
+      onPress={() => handleReportPress(item)}
+      style={[styles.reportButton, index % 2 === 0 && styles.reportButtonAlt]}
     >
-      <Text style={styles.buttonText}>{item.name}</Text>
-      <Text style={styles.buttonDate}>{item.date}</Text>
+      <Text style={styles.reportName}>{item.name}</Text>
+      <Text style={styles.reportDate}>{item.date}</Text>
     </TouchableOpacity>
   )
 
+  /**
+   * Render section header
+   * @param {Object} section - Section object with title
+   * @returns {JSX.Element} Section header component
+   */
   const renderSectionHeader = ({ section: { title } }) => (
-    <Text style={styles.headerText}>{title}</Text>
+    <Text style={styles.sectionHeader}>{title}</Text>
   )
 
   return (
     <View style={styles.container}>
       <ScreenHeader title={groupTitle} />
 
-      <View style={styles.contentContainer}>
-        <CustomFilter
-          options1={[
-            { label: 'Entrada', value: 'entrada' },
-            { label: 'Salida', value: 'salida' },
-          ]}
-          onSelect1={() => {}}
-          defaultText1="Tipo de Reporte"
-          options2={[
-            { label: 'Más reciente', value: 'desc' },
-            { label: 'Más antiguo', value: 'asc' },
-          ]}
-          onSelect2={() => {}}
-          defaultText2="Orden por"
+      <View style={styles.filtersContainer}>
+        <CustomDropdown
+          label="Tipo de Reporte"
+          value={reportType}
+          options={reportTypeOptions}
+          onSelect={setReportType}
+          placeholder="Seleccionar"
         />
-
-        <SectionList
-          sections={groupedData}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          style={styles.list}
-          ItemSeparatorComponent={Separator}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>
-              No hay reportes disponibles para este mes.
-            </Text>
-          }
+        <CustomDropdown
+          label="Orden por"
+          value={sortOrder}
+          options={sortOptions}
+          onSelect={setSortOrder}
+          placeholder="Seleccionar"
         />
       </View>
+
+      <SectionList
+        sections={groupedData}
+        keyExtractor={(item) => item.id}
+        renderItem={renderReportItem}
+        renderSectionHeader={renderSectionHeader}
+        style={styles.reportsList}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No hay reportes disponibles para este mes.
+          </Text>
+        }
+      />
     </View>
   )
 }
@@ -129,24 +156,25 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: COLORS.background,
   },
-  contentContainer: {
-    flex: 1,
-    width: '100%',
+  filtersContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    gap: 10,
   },
-  list: {
-    width: '100%',
+  reportsList: {
+    flex: 1,
     marginTop: 10,
   },
-  headerText: {
+  sectionHeader: {
     fontFamily: FONTS.bold,
     fontSize: FONTS.size.lg,
     color: COLORS.blackText,
     paddingVertical: 10,
     paddingHorizontal: 15,
     marginTop: 20,
-    textTransform: 'capitalize',
   },
-  button: {
+  reportButton: {
     backgroundColor: '#C6C7C7',
     padding: 15,
     flexDirection: 'row',
@@ -154,23 +182,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  buttonAlt: {
+  reportButtonAlt: {
     backgroundColor: '#E6E6E7',
   },
-  buttonText: {
+  reportName: {
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.md,
     color: COLORS.blackText,
   },
-  buttonDate: {
+  reportDate: {
     fontFamily: FONTS.light,
     fontSize: FONTS.size.sm,
     color: COLORS.blackText,
+  },
+  separator: {
+    height: 5,
   },
   emptyText: {
     textAlign: 'center',
     marginTop: 50,
     fontFamily: FONTS.regular,
+    color: COLORS.blackText,
   },
 })
 

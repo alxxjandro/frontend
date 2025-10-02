@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native'
 import { useState } from 'react'
 import DropDownPicker from 'react-native-dropdown-picker'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { COLORS, FONTS } from '../styles/globalStyles'
 
 export default function CustomDropdown({
   label,
@@ -42,6 +42,7 @@ export default function CustomDropdown({
         placeholderStyle={styles.placeholderText}
         arrowIconStyle={styles.arrowIcon}
         tickIconStyle={styles.tickIcon}
+        dropDownDirection="AUTO"
         zIndex={3000}
         zIndexInverse={1000}
       />

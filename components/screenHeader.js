@@ -8,6 +8,7 @@ export default function ScreenHeader({
   subtitle,
   showBackButton = true,
   onBackPress,
+  backIconName = 'chevron-back',
 }) {
   const router = useRouter()
 
@@ -30,7 +31,7 @@ export default function ScreenHeader({
 
       {showBackButton && (
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Ionicons name="chevron-back" size={28} color={COLORS.blackText} />
+          <Ionicons name={backIconName} size={28} color={COLORS.blackText} />
         </TouchableOpacity>
       )}
     </View>

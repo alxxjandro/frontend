@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
-import AddProductButton from '../../../components/addProductButton'
+import { COLORS, FONTS } from '../styles/globalStyles'
+import AddProductButton from './addProductButton'
 
 export default function ProductList({
   title = 'Productos de la salida',

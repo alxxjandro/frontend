@@ -1,26 +1,39 @@
 import { TouchableOpacity, Text, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, usePathname } from 'expo-router'
 import { COLORS, FONTS } from '../styles/globalStyles'
 
 export default function AddProductButton({
   text = 'Agregar un producto del inventario +',
   onPress,
-  navigateTo = '/inventario',
+  navigateTo = '/inventario/nuevoProducto',
   mode = 'view',
   backgroundColor = COLORS.primaryBlue,
   textColor = COLORS.whiteText,
   style,
 }) {
   const router = useRouter()
+  const pathname = usePathname()
 
   const handlePress = () => {
     if (onPress) {
       onPress()
     } else {
-      router.push({
-        pathname: navigateTo,
-        params: { mode },
-      })
+      // Check if we should navigate to inventario for selection or to new product creation
+      if (mode === 'select') {
+        // Determine return route based on current pathname
+        let returnTo = 'nuevaEntrada' // default
+        if (pathname.includes('nuevaSalida')) {
+          returnTo = 'nuevaSalida'
+        }
+
+        router.push({
+          pathname: '/inventario',
+          params: { mode, returnTo },
+        })
+      } else {
+        // Use push for new product creation
+        router.push(navigateTo)
+      }
     }
   }
 
