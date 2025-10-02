@@ -9,8 +9,9 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import ScreenHeader from '../../../components/screenHeader'
 import CustomDropdown from '../../../components/CustomDropdown'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
+import { globalStyles, COLORS, FONTS } from '../../../styles/globalStyles'
 import { mockReports } from '../data/mockData'
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 
 // Month names in Spanish
 const MONTH_NAMES = [
@@ -113,40 +114,44 @@ const Group = () => {
   )
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title={groupTitle} />
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={styles.container}>
+          <ScreenHeader title={groupTitle} />
 
-      <View style={styles.filtersContainer}>
-        <CustomDropdown
-          label="Tipo de Reporte"
-          value={reportType}
-          options={reportTypeOptions}
-          onSelect={setReportType}
-          placeholder="Seleccionar"
-        />
-        <CustomDropdown
-          label="Orden por"
-          value={sortOrder}
-          options={sortOptions}
-          onSelect={setSortOrder}
-          placeholder="Seleccionar"
-        />
-      </View>
+          <View style={styles.filtersContainer}>
+            <CustomDropdown
+              label="Tipo de Reporte"
+              value={reportType}
+              options={reportTypeOptions}
+              onSelect={setReportType}
+              placeholder="Seleccionar"
+            />
+            <CustomDropdown
+              label="Orden por"
+              value={sortOrder}
+              options={sortOptions}
+              onSelect={setSortOrder}
+              placeholder="Seleccionar"
+            />
+          </View>
 
-      <SectionList
-        sections={groupedData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderReportItem}
-        renderSectionHeader={renderSectionHeader}
-        style={styles.reportsList}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            No hay reportes disponibles para este mes.
-          </Text>
-        }
-      />
-    </View>
+          <SectionList
+            sections={groupedData}
+            keyExtractor={(item) => item.id}
+            renderItem={renderReportItem}
+            renderSectionHeader={renderSectionHeader}
+            style={styles.reportsList}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>
+                No hay reportes disponibles para este mes.
+              </Text>
+            }
+          />
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 

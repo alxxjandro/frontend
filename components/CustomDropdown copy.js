@@ -21,7 +21,7 @@ export default function CustomDropdown({
   value,
   onSelect,
   isOpen,
-  setIsOpen = false,
+  setIsOpen,
 }) {
   const handleSelect = (option) => {
     onSelect(option)
@@ -37,7 +37,7 @@ export default function CustomDropdown({
 
       <Pressable
         style={[styles.input, { borderColor }]}
-        onPress={setIsOpen ? () => setIsOpen(!isOpen) : () => {}}
+        onPress={() => setIsOpen(!isOpen)}
       >
         <Text
           style={{
@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
   wrapper: {
     marginBottom: 16,
     zIndex: 10,
-    flex: 1,
   },
   label: {
     fontFamily: FONTS.bold,
@@ -106,6 +105,7 @@ const styles = StyleSheet.create({
     top: 72,
     left: 0,
     right: 0,
+    borderWidth: 1,
     borderColor: COLORS.primaryBlue,
     borderRadius: 6,
     marginTop: 4,

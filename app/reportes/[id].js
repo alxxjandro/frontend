@@ -2,8 +2,9 @@ import { View, Text, FlatList, StyleSheet } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import ScreenHeader from '../../components/screenHeader'
 import CustomButton from '../../components/customButton'
-import { COLORS, FONTS } from '../../styles/globalStyles'
+import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
 import { mockReports } from './data/mockData'
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 
 // Mock data for the report details table
 const REPORT_DATA = [

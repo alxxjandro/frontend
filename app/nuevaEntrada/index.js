@@ -15,7 +15,8 @@ import MoneyInput from '../../components/MoneyInput'
 import CustomDropdown from '../../components/CustomDropdown'
 import CustomDatePicker from '../../components/CustomDatePicker'
 import ProductList from '../../components/ProductList'
-import { COLORS, FONTS } from '../../styles/globalStyles'
+import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function NuevaEntrada() {
   const [fecha, setFecha] = useState('27/09/2025')
@@ -48,113 +49,118 @@ export default function NuevaEntrada() {
 
   const handleSaveDraft = () => {
     // Logic for saving draft
-    console.log('Saving draft:', { fecha, motivo, monto, productos })
   }
 
   const handleRegisterEntrada = () => {
     // Logic for registering the entrada
-    console.log('Registering entrada:', { fecha, motivo, monto, productos })
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-      <View style={styles.wrapper}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Header */}
-          <ScreenHeader title="Nueva entrada" />
-
-          {/* Dropdown de motivo */}
-          <CustomDropdown
-            label="Motivo de la entrada"
-            value={motivo}
-            placeholder="Seleccionar"
-            options={opcionesMotivo}
-            isOpen={isDropdownOpen}
-            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
-            onSelect={handleMotivoSelect}
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={styles.container}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={COLORS.background}
           />
+          <View style={styles.wrapper}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+              {/* Header */}
+              <ScreenHeader title="Nueva entrada" />
 
-          {/* Money Input - only shown when Compra is selected */}
-          {motivo === 'Compra' && (
-            <MoneyInput
-              label="Monto"
-              value={monto}
-              onChangeText={setMonto}
-              placeholder="Monto"
-              showCurrencySymbol={true}
-              currencySymbol="$"
-              keyboardType="numeric"
-              numbersOnly={true}
-            />
-          )}
-
-          {/* Date Picker */}
-          <CustomDatePicker
-            label="Fecha de entrada"
-            date={fecha}
-            isVisible={isDatePickerVisible}
-            onToggle={() => setDatePickerVisibility(true)}
-            onDateSelect={handleDateSelect}
-            onCancel={() => setDatePickerVisibility(false)}
-          />
-
-          {/* Product List */}
-          <ProductList
-            title="Productos de la entrada"
-            products={productos}
-            addButtonText="Agregar del inventario +"
-            emptyMessage="Esta entrada no cuenta con ningún producto..."
-            navigateTo="/inventario"
-          />
-
-          {/* Additional Buttons Section */}
-          <View style={styles.additionalButtonsContainer}>
-            <TouchableOpacity
-              style={styles.barcodeButton}
-              onPress={handleScanBarcode}
-            >
-              <View style={styles.buttonContent}>
-                <Ionicons
-                  name="barcode"
-                  size={20}
-                  color={COLORS.whiteText}
-                  style={styles.buttonIcon}
-                />
-                <Text style={styles.barcodeButtonText}>
-                  Escanear código de barras
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-
-        {/* Fixed Bottom Buttons */}
-        <View style={styles.fixedBottomButtons}>
-          <TouchableOpacity
-            style={styles.draftButton}
-            onPress={handleSaveDraft}
-          >
-            <View style={styles.buttonContent}>
-              <Ionicons
-                name="save"
-                size={20}
-                color={COLORS.blackText}
-                style={styles.buttonIcon}
+              {/* Dropdown de motivo */}
+              <CustomDropdown
+                label="Motivo de la entrada"
+                value={motivo}
+                placeholder="Seleccionar"
+                options={opcionesMotivo}
+                isOpen={isDropdownOpen}
+                onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+                onSelect={handleMotivoSelect}
               />
-              <Text style={styles.draftButtonText}>Guardar borrador</Text>
-            </View>
-          </TouchableOpacity>
 
-          <View style={styles.registerButtonWrapper}>
-            <CustomButton
-              title="Registrar Entrada >>"
-              onPress={handleRegisterEntrada}
-            />
+              {/* Money Input - only shown when Compra is selected */}
+              {motivo === 'Compra' && (
+                <MoneyInput
+                  label="Monto"
+                  value={monto}
+                  onChangeText={setMonto}
+                  placeholder="Monto"
+                  showCurrencySymbol={true}
+                  currencySymbol="$"
+                  keyboardType="numeric"
+                  numbersOnly={true}
+                />
+              )}
+
+              {/* Date Picker */}
+              <CustomDatePicker
+                label="Fecha de entrada"
+                date={fecha}
+                isVisible={isDatePickerVisible}
+                onToggle={() => setDatePickerVisibility(true)}
+                onDateSelect={handleDateSelect}
+                onCancel={() => setDatePickerVisibility(false)}
+              />
+
+              {/* Product List */}
+              <ProductList
+                title="Productos de la entrada"
+                products={productos}
+                addButtonText="Agregar del inventario +"
+                emptyMessage="Esta entrada no cuenta con ningún producto..."
+                navigateTo="/inventario"
+              />
+
+              {/* Additional Buttons Section */}
+              {/* <View style={styles.additionalButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.barcodeButton}
+                  onPress={handleScanBarcode}
+                >
+                  <View style={styles.buttonContent}>
+                    <Ionicons
+                      name="barcode"
+                      size={20}
+                      color={COLORS.whiteText}
+                      style={styles.buttonIcon}
+                    />
+                    <Text style={styles.barcodeButtonText}>
+                      Escanear código de barras
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View> */}
+            </ScrollView>
+
+            {/* Fixed Bottom Buttons */}
+            <View style={styles.fixedBottomButtons}>
+              <TouchableOpacity
+                style={styles.draftButton}
+                onPress={handleSaveDraft}
+              >
+                <View style={styles.buttonContent}>
+                  <Ionicons
+                    name="save"
+                    size={20}
+                    color={COLORS.blackText}
+                    style={styles.buttonIcon}
+                  />
+                  <Text style={styles.draftButtonText}>Guardar borrador</Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.registerButtonWrapper}>
+                <CustomButton
+                  title="Registrar Entrada >>"
+                  onPress={handleRegisterEntrada}
+                />
+              </View>
+            </View>
           </View>
         </View>
-      </View>
-    </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 

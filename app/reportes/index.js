@@ -9,8 +9,9 @@ import {
 import { useRouter } from 'expo-router'
 import ScreenHeader from '../../components/screenHeader'
 import CustomDropdown from '../../components/CustomDropdown'
-import { COLORS, FONTS } from '../../styles/globalStyles'
+import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
 import { mockReports } from './data/mockData'
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 
 /**
  * Main reports screen displaying list of available reports
@@ -104,40 +105,44 @@ export default function ReportesScreen() {
   )
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Reportes" showBackButton={true} />
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={styles.container}>
+          <ScreenHeader title="Reportes" showBackButton={true} />
 
-      <Text style={styles.countText}>{reportsToShow.length} Reportes</Text>
+          <Text style={styles.countText}>{reportsToShow.length} Reportes</Text>
 
-      <View style={styles.filtersContainer}>
-        <CustomDropdown
-          label="Tipo de Reporte"
-          value={reportType}
-          options={reportTypeOptions}
-          onSelect={setReportType}
-          placeholder="Seleccionar"
-        />
-        <CustomDropdown
-          label="Orden por"
-          value={sortOrder}
-          options={sortOptions}
-          onSelect={setSortOrder}
-          placeholder="Seleccionar"
-        />
-      </View>
+          <View style={styles.filtersContainer}>
+            <CustomDropdown
+              label="Tipo de Reporte"
+              value={reportType}
+              options={reportTypeOptions}
+              onSelect={setReportType}
+              placeholder="Seleccionar"
+            />
+            <CustomDropdown
+              label="Orden por"
+              value={sortOrder}
+              options={sortOptions}
+              onSelect={setSortOrder}
+              placeholder="Seleccionar"
+            />
+          </View>
 
-      <SectionList
-        sections={groupedData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderReportItem}
-        renderSectionHeader={renderSectionHeader}
-        style={styles.reportsList}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No hay reportes disponibles.</Text>
-        }
-      />
-    </View>
+          <SectionList
+            sections={groupedData}
+            keyExtractor={(item) => item.id}
+            renderItem={renderReportItem}
+            renderSectionHeader={renderSectionHeader}
+            style={styles.reportsList}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No hay reportes disponibles.</Text>
+            }
+          />
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
@@ -146,6 +151,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: COLORS.background,
+    width: 332,
   },
   countText: {
     fontFamily: FONTS.regular,
@@ -155,10 +161,8 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   filtersContainer: {
+    display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    gap: 10,
   },
   reportsList: {
     flex: 1,

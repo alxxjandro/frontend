@@ -204,7 +204,7 @@ export default function InventarioContent({
         {(mode === 'view' ||
           (mode === 'select' && returnTo === 'nuevaEntrada')) && (
           <ExtraButton
-            color={COLORS.whiteText}
+            color={COLORS.background}
             style={styles.addButton}
             textStyle={styles.buttonText}
             title="Agregar producto"

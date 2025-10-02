@@ -1,63 +1,11 @@
 import { useState } from 'react'
 import { View, ScrollView, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 import ScreenHeader from '../../components/screenHeader'
 import InventarioContent from './Componentes/InventarioContent'
 import FilterModal from './Componentes/FilterModal'
-import { COLORS } from '../../styles/globalStyles'
-
-// Constants
-const INITIAL_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Manzana',
-    emoji: '🍎',
-    quantity: 53,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Manzana',
-  },
-  {
-    id: 2,
-    name: 'Leche',
-    emoji: '🥛',
-    quantity: 12,
-    unit: 'L disponibles',
-    route: '/inventario/Producto/Leche',
-  },
-  {
-    id: 3,
-    name: 'Naranja',
-    emoji: '🍊',
-    quantity: 41,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Manzana',
-  },
-  {
-    id: 4,
-    name: 'Cereal',
-    emoji: '🥣',
-    quantity: 20,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Leche',
-  },
-  {
-    id: 5,
-    name: 'Huevo',
-    emoji: '🥚',
-    quantity: 199,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Manzana',
-  },
-  {
-    id: 6,
-    name: 'Tomate',
-    emoji: '🍅',
-    quantity: 4,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Leche',
-  },
-]
+import { globalStyles, COLORS } from '../../styles/globalStyles'
 
 const TOTAL_PRODUCTS = 59
 
@@ -150,36 +98,40 @@ export default function InventarioScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <ScreenHeader
-          title="Inventario"
-          subtitle={`(${TOTAL_PRODUCTS} productos)`}
-          onBackPress={handleBackToHome}
-        />
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={styles.container}>
+          <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <ScreenHeader
+              title="Inventario"
+              subtitle={`(${TOTAL_PRODUCTS} productos)`}
+              onBackPress={handleBackToHome}
+            />
 
-        <InventarioContent
-          onProductPress={handleProductPress}
-          onFilterPress={toggleModal}
-          mode={mode}
-          returnTo={returnTo}
-        />
-      </ScrollView>
+            <InventarioContent
+              onProductPress={handleProductPress}
+              onFilterPress={toggleModal}
+              mode={mode}
+              returnTo={returnTo}
+            />
+          </ScrollView>
 
-      {Object.entries(MODAL_CONFIGS).map(([modalKey, config]) => (
-        <FilterModal
-          key={modalKey}
-          visible={modalStates[modalKey]}
-          onClose={() => toggleModal(modalKey)}
-          title={config.title}
-          options={config.options}
-        />
-      ))}
-    </View>
+          {Object.entries(MODAL_CONFIGS).map(([modalKey, config]) => (
+            <FilterModal
+              key={modalKey}
+              visible={modalStates[modalKey]}
+              onClose={() => toggleModal(modalKey)}
+              title={config.title}
+              options={config.options}
+            />
+          ))}
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 

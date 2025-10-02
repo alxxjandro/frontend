@@ -5,7 +5,8 @@ import ScreenHeader from '../../components/screenHeader'
 import CustomDropdown from '../../components/CustomDropdown'
 import CustomDatePicker from '../../components/CustomDatePicker'
 import ProductList from '../../components/ProductList'
-import { COLORS } from '../../styles/globalStyles'
+import { globalStyles, COLORS } from '../../styles/globalStyles'
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function NuevaSalida() {
   const [fecha, setFecha] = useState('27/09/2025')
@@ -32,47 +33,54 @@ export default function NuevaSalida() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-      <View style={styles.wrapper}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Header */}
-          <ScreenHeader title="Nueva salida" />
-
-          {/* Dropdown de motivo */}
-          <CustomDropdown
-            label="Motivo de la salida"
-            value={motivo}
-            placeholder="Seleccionar"
-            options={opcionesMotivo}
-            isOpen={isDropdownOpen}
-            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
-            onSelect={handleMotivoSelect}
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={styles.container}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={COLORS.background}
           />
+          <View style={styles.wrapper}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+              {/* Header */}
+              <ScreenHeader title="Nueva salida" />
 
-          {/* Date Picker */}
-          <CustomDatePicker
-            label="Fecha de salida"
-            date={fecha}
-            isVisible={isDatePickerVisible}
-            onToggle={() => setDatePickerVisibility(true)}
-            onDateSelect={handleDateSelect}
-            onCancel={() => setDatePickerVisibility(false)}
-          />
+              {/* Dropdown de motivo */}
+              <CustomDropdown
+                label="Motivo de la salida"
+                value={motivo}
+                placeholder="Seleccionar"
+                options={opcionesMotivo}
+                isOpen={isDropdownOpen}
+                onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+                onSelect={handleMotivoSelect}
+              />
 
-          {/* Product List */}
-          <ProductList products={productos} />
-        </ScrollView>
+              {/* Date Picker */}
+              <CustomDatePicker
+                label="Fecha de salida"
+                date={fecha}
+                isVisible={isDatePickerVisible}
+                onToggle={() => setDatePickerVisibility(true)}
+                onDateSelect={handleDateSelect}
+                onCancel={() => setDatePickerVisibility(false)}
+              />
 
-        {/* Fixed Bottom Button */}
-        <View style={styles.fixedBottom}>
-          <CustomButton
-            title="Registrar salida"
-            onPress={handleRegisterSalida}
-          />
+              {/* Product List */}
+              <ProductList products={productos} />
+            </ScrollView>
+
+            {/* Fixed Bottom Button */}
+            <View style={styles.fixedBottom}>
+              <CustomButton
+                title="Registrar salida"
+                onPress={handleRegisterSalida}
+              />
+            </View>
+          </View>
         </View>
-      </View>
-    </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
