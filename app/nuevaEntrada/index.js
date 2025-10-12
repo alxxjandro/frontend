@@ -1,86 +1,72 @@
+import { useState } from 'react'
 import {
   View,
-  ScrollView,
-  StatusBar,
-  TouchableOpacity,
-  Text,
+  TouchableWithoutFeedback,
+  Keyboard,
   StyleSheet,
 } from 'react-native'
-import { useState } from 'react'
-import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+import { globalStyles, COLORS } from '../../styles/globalStyles'
 import ScreenHeader from '../../components/screenHeader'
-import CustomButton from '../../components/customButton'
-import MoneyInput from '../../components/MoneyInput'
 import CustomDropdown from '../../components/CustomDropdown'
 import CustomDatePicker from '../../components/CustomDatePicker'
+import CustomButton from '../../components/customButton'
+import MoneyInput from '../../components/MoneyInput'
 import ProductList from '../../components/ProductList'
-import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 
 export default function NuevaEntrada() {
-  const [fecha, setFecha] = useState('27/09/2025')
-  const [productos, setProductos] = useState([])
-  const [motivo, setMotivo] = useState(null)
-  const [monto, setMonto] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
-  const opcionesMotivo = ['Donación', 'Compra']
+  const router = useRouter()
 
-  const handleMotivoSelect = (selectedMotivo) => {
-    setMotivo(selectedMotivo)
+  const [fecha, setFecha] = useState()
+  const [monto, setMonto] = useState()
+  // eslint-disable-next-line
+  const [productos, setProductos] = useState([])
+  const [opcionEntrada, setOpcionEntrada] = useState('')
+  const opcionesEntrada = ['Compra', 'Donación']
+
+  const handleOutsidePress = () => {
+    Keyboard.dismiss()
     setIsDropdownOpen(false)
-    // Reset monto when motivo changes
-    if (selectedMotivo !== 'Compra') {
-      setMonto('')
-    }
-  }
-
-  const handleDateSelect = (selectedDate) => {
-    setFecha(selectedDate)
     setDatePickerVisibility(false)
-  }
-
-  const handleScanBarcode = () => {
-    // Navigate to barcode scanner screen
-    router.push('/nuevaEntrada/escaner')
-  }
-
-  const handleSaveDraft = () => {
-    // Logic for saving draft
-  }
-
-  const handleRegisterEntrada = () => {
-    // Logic for registering the entrada
   }
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={globalStyles.body}>
-        <View style={styles.container}>
-          <StatusBar
-            barStyle="dark-content"
-            backgroundColor={COLORS.background}
-          />
-          <View style={styles.wrapper}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              {/* Header */}
-              <ScreenHeader title="Nueva entrada" />
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <View style={styles.container}>
+            <ScreenHeader
+              onBackPress={() => router.navigate('/')}
+              title="Nueva entrada"
+              paddingHorizontal={0}
+            />
 
-              {/* Dropdown de motivo */}
+            {isDatePickerVisible && (
+              <TouchableWithoutFeedback
+                onPress={() => setDatePickerVisibility(false)}
+              >
+                <View style={styles.backdrop} />
+              </TouchableWithoutFeedback>
+            )}
+
+            <View style={styles.wrapper}>
               <CustomDropdown
-                label="Motivo de la entrada"
-                value={motivo}
+                label="Tipo de entrada"
+                value={opcionEntrada}
                 placeholder="Seleccionar"
-                options={opcionesMotivo}
+                options={opcionesEntrada}
                 isOpen={isDropdownOpen}
-                onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
-                onSelect={handleMotivoSelect}
+                setIsOpen={setIsDropdownOpen}
+                onSelect={setOpcionEntrada}
               />
+            </View>
 
-              {/* Money Input - only shown when Compra is selected */}
-              {motivo === 'Compra' && (
+            <View>
+              {opcionEntrada === 'Compra' && (
                 <MoneyInput
                   label="Monto"
                   value={monto}
@@ -92,73 +78,51 @@ export default function NuevaEntrada() {
                   numbersOnly={true}
                 />
               )}
+            </View>
 
-              {/* Date Picker */}
+            <View style={styles.dateWrapper}>
               <CustomDatePicker
                 label="Fecha de entrada"
                 date={fecha}
                 isVisible={isDatePickerVisible}
                 onToggle={() => setDatePickerVisibility(true)}
-                onDateSelect={handleDateSelect}
+                onDateSelect={(d) => {
+                  setFecha(d)
+                  setDatePickerVisibility(false)
+                }}
                 onCancel={() => setDatePickerVisibility(false)}
               />
-
-              {/* Product List */}
-              <ProductList
-                title="Productos de la entrada"
-                products={productos}
-                addButtonText="Agregar del inventario +"
-                emptyMessage="Esta entrada no cuenta con ningún producto..."
-                navigateTo="/inventario"
-              />
-
-              {/* Additional Buttons Section */}
-              {/* <View style={styles.additionalButtonsContainer}>
-                <TouchableOpacity
-                  style={styles.barcodeButton}
-                  onPress={handleScanBarcode}
-                >
-                  <View style={styles.buttonContent}>
-                    <Ionicons
-                      name="barcode"
-                      size={20}
-                      color={COLORS.whiteText}
-                      style={styles.buttonIcon}
-                    />
-                    <Text style={styles.barcodeButtonText}>
-                      Escanear código de barras
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View> */}
-            </ScrollView>
-
-            {/* Fixed Bottom Buttons */}
-            <View style={styles.fixedBottomButtons}>
-              <TouchableOpacity
-                style={styles.draftButton}
-                onPress={handleSaveDraft}
-              >
-                <View style={styles.buttonContent}>
-                  <Ionicons
-                    name="save"
-                    size={20}
-                    color={COLORS.blackText}
-                    style={styles.buttonIcon}
-                  />
-                  <Text style={styles.draftButtonText}>Guardar borrador</Text>
-                </View>
-              </TouchableOpacity>
-
-              <View style={styles.registerButtonWrapper}>
+            </View>
+            <ProductList
+              title="Productos de la entrada"
+              products={productos}
+              addButtonText="Agregar del inventario"
+              emptyMessage="Esta entrada no cuenta con ningún producto..."
+              navigateTo="/inventario"
+            />
+            <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+              <View style={styles.buttonGroup}>
                 <CustomButton
-                  title="Registrar Entrada >>"
-                  onPress={handleRegisterEntrada}
+                  title="Guardar borrador"
+                  onPress={() => {}}
+                  borderRadius={4}
+                  textColor={COLORS.primaryBlue}
+                  borderColor={COLORS.primaryBlue}
+                  backgroundColor={COLORS.background}
+                  textSize={12}
+                />
+                <CustomButton
+                  title="Registrar Entrada"
+                  onPress={() => {}}
+                  borderRadius={4}
+                  backgroundColor={COLORS.primaryBlue}
+                  iconRight="chevron-forward"
+                  textSize={12}
                 />
               </View>
             </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </SafeAreaView>
     </SafeAreaProvider>
   )
@@ -167,68 +131,56 @@ export default function NuevaEntrada() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: 332,
+    alignSelf: 'center',
     backgroundColor: COLORS.background,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 15,
   },
   wrapper: {
+    height: 80,
+    zIndex: 10,
+    position: 'relative',
+  },
+  dateWrapper: {
+    paddingVertical: 8,
+    zIndex: 1,
+    position: 'relative',
+  },
+  formContainer: {
+    width: '100%',
+    marginBottom: 12,
+  },
+  inputBlock: {
+    marginBottom: 18,
+    position: 'relative',
+  },
+  productsContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    width: '100%',
+    marginTop: 4,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
-  },
-  additionalButtonsContainer: {
-    marginTop: 15,
-  },
-  barcodeButton: {
-    backgroundColor: COLORS.primaryBlue,
-    padding: 12,
-    borderRadius: 6,
-    marginTop: 5,
-  },
-  barcodeButtonText: {
-    color: COLORS.whiteText,
-    textAlign: 'center',
-    fontFamily: FONTS.regular,
-    fontSize: FONTS.size.md,
-    fontWeight: '500',
-  },
-  buttonContent: {
+  buttonGroup: {
+    display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignContent: 'center',
+    height: 50,
+    gap: 10,
+    width: '100%',
+    marginTop: 10,
   },
-  buttonIcon: {
-    marginRight: 8,
-  },
-  fixedBottomButtons: {
+  bottomButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderTopWidth: 1,
-    borderColor: COLORS.greyBorder,
-    backgroundColor: COLORS.background,
-    gap: 12,
-  },
-  draftButton: {
-    backgroundColor: COLORS.cardBackgroundOne,
-    borderWidth: 1,
-    borderColor: COLORS.greyBorder,
-    padding: 12,
-    borderRadius: 6,
-    flex: 1,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  draftButtonText: {
-    color: COLORS.blackText,
-    textAlign: 'center',
-    fontFamily: FONTS.regular,
-    fontSize: FONTS.size.md,
-  },
-  registerButtonWrapper: {
-    flex: 1,
+    gap: 10,
+    width: 332,
+    height: 52,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 10,
   },
 })

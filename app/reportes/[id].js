@@ -1,117 +1,161 @@
-import { View, Text, FlatList, StyleSheet } from 'react-native'
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import ScreenHeader from '../../components/screenHeader'
 import CustomButton from '../../components/customButton'
 import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
 import { mockReports } from './data/mockData'
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
 
-// Mock data for the report details table
 const REPORT_DATA = [
   {
     id: '1',
     cantidad: '54',
     producto: '🍎 Manzana',
-    categoria: 'Categoria 1',
+    categoria: 'Categoría 1',
     fecha: '19/04/24',
+  },
+  {
+    id: '2',
+    cantidad: '45L',
+    producto: '🥛 Leche',
+    categoria: 'Categoría 2',
+    fecha: '11/04/25',
+  },
+  {
+    id: '3',
+    cantidad: '76',
+    producto: '🥚 Huevo',
+    categoria: 'Categoría 1',
+    fecha: '05/03/24',
+  },
+  {
+    id: '4',
+    cantidad: '12',
+    producto: '🍌 Plátano',
+    categoria: 'Categoría 1',
+    fecha: '21/04/24',
   },
 ]
 
-/**
- * Report detail screen showing specific report data in table format
- * @returns {JSX.Element} ReporteDetalleScreen component
- */
-const ReporteDetalleScreen = () => {
+export default function ReporteDetalleScreen() {
   const { id, name } = useLocalSearchParams()
   const report = mockReports.find((r) => r.id === id)
-
-  // Clean the name by removing << and >>
   const cleanName = decodeURIComponent(name).replace(/^(<<|>>)\s*/, '')
 
-  /**
-   * Handle Excel download
-   */
-  const handleDownloadExcel = () => {
-    console.log('Descargar Excel')
-  }
+  const handleDownloadExcel = () => console.log('Descargar Excel')
+  const handleDownloadPDF = () => console.log('Descargar PDF')
 
-  /**
-   * Handle PDF download
-   */
-  const handleDownloadPDF = () => {
-    console.log('Descargar PDF')
-  }
-
-  /**
-   * Render table row item
-   * @param {Object} item - Row data
-   * @param {number} index - Row index
-   * @returns {JSX.Element} Table row component
-   */
   const renderTableRow = ({ item, index }) => (
-    <View style={[styles.tableRow, index % 2 === 0 && styles.tableRowAlt]}>
-      <Text style={styles.tableCell}>{item.cantidad}</Text>
-      <Text style={styles.tableCell}>{item.producto}</Text>
-      <Text style={styles.tableCell}>{item.categoria}</Text>
-      <Text style={styles.tableCell}>{item.fecha}</Text>
+    <View style={[styles.tableRow, index % 2 !== 0 && styles.tableRowAlt]}>
+      <Text style={[styles.tableCell, styles.colCantidad]}>
+        {item.cantidad}
+      </Text>
+      <Text style={[styles.tableCell, styles.colProducto]}>
+        {item.producto}
+      </Text>
+      <Text style={[styles.tableCell, styles.colCategoria]}>
+        {item.categoria}
+      </Text>
+      <Text style={[styles.tableCell, styles.colFecha]}>{item.fecha}</Text>
     </View>
   )
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title={cleanName} />
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.container}>
+            {/* Header */}
+            <ScreenHeader
+              title={cleanName}
+              subtitle="Realizada por Persona"
+              showBackButton
+              paddingHorizontal={0}
+            />
 
-      {/* Data Table */}
-      <View style={styles.table}>
-        {/* Table Header */}
-        <View style={styles.tableHeader}>
-          <Text style={styles.tableHeaderCell}>Cantidad</Text>
-          <Text style={styles.tableHeaderCell}>Producto</Text>
-          <Text style={styles.tableHeaderCell}>Categoría</Text>
-          <Text style={styles.tableHeaderCell}>Fecha Entrada</Text>
-        </View>
+            {/* Scrollable content */}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                alignItems: 'center',
+                paddingBottom: 100,
+              }}
+            >
+              {/* Tabla */}
+              <View style={styles.table}>
+                {/* Encabezado */}
+                <View style={styles.tableHeader}>
+                  <Text style={[styles.tableHeaderCell, styles.colCantidad]}>
+                    Cantidad
+                  </Text>
+                  <Text style={[styles.tableHeaderCell, styles.colProducto]}>
+                    Producto
+                  </Text>
+                  <Text style={[styles.tableHeaderCell, styles.colCategoria]}>
+                    Categoría
+                  </Text>
+                  <Text style={[styles.tableHeaderCell, styles.colFecha]}>
+                    Fecha Entrada
+                  </Text>
+                </View>
 
-        {/* Table Rows */}
-        <FlatList
-          data={REPORT_DATA}
-          renderItem={renderTableRow}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No hay datos disponibles.</Text>
-          }
-        />
-      </View>
+                {/* Filas */}
+                <FlatList
+                  data={REPORT_DATA}
+                  renderItem={renderTableRow}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  ListEmptyComponent={
+                    <Text style={styles.emptyText}>
+                      No hay datos disponibles.
+                    </Text>
+                  }
+                />
+              </View>
 
-      {/* Download buttons */}
-      <View style={styles.buttonsContainer}>
-        <CustomButton
-          title="Descargar Excel"
-          onPress={handleDownloadExcel}
-          backgroundColor={COLORS.primaryBlue}
-        />
-        <CustomButton
-          title="Descargar PDF"
-          onPress={handleDownloadPDF}
-          backgroundColor={COLORS.primaryBlue}
-        />
-      </View>
-    </View>
+              {/* Botones */}
+              <View style={styles.buttonsContainer}>
+                <CustomButton
+                  title="Descargar PDF"
+                  onPress={handleDownloadPDF}
+                  backgroundColor={COLORS.primaryBlue}
+                  textColor={COLORS.whiteText}
+                />
+                <CustomButton
+                  title="Descargar Excel"
+                  onPress={handleDownloadExcel}
+                  backgroundColor={COLORS.primaryBlue}
+                  textColor={COLORS.whiteText}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    width: 332,
     backgroundColor: COLORS.background,
+    alignItems: 'center',
   },
   table: {
-    borderRadius: 8,
+    width: 332,
+    borderRadius: 10,
     overflow: 'hidden',
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: COLORS.greyBorder,
-    flex: 1,
+    marginTop: 16,
   },
   tableHeader: {
     flexDirection: 'row',
@@ -119,39 +163,50 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   tableHeaderCell: {
-    flex: 1,
+    textAlign: 'center',
     color: '#00568F',
     fontFamily: FONTS.bold,
     fontSize: FONTS.size.sm,
-    textAlign: 'center',
   },
   tableRow: {
     flexDirection: 'row',
+    backgroundColor: '#D5E2EB',
     paddingVertical: 12,
-    backgroundColor: '#BCD2E0',
   },
   tableRowAlt: {
-    backgroundColor: '#D5E2EB',
+    backgroundColor: '#BCD2E0',
   },
   tableCell: {
-    flex: 1,
     textAlign: 'center',
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.sm,
     color: COLORS.blackText,
   },
+
+  // 🔹 Proporciones de columnas
+  colCantidad: {
+    flex: 0.7, // más angosta
+  },
+  colProducto: {
+    flex: 1.3, // más espacio para texto + emoji
+  },
+  colCategoria: {
+    flex: 1,
+  },
+  colFecha: {
+    flex: 1,
+  },
+
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+    gap: 10,
+  },
   emptyText: {
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 40,
     fontFamily: FONTS.regular,
     color: COLORS.blackText,
   },
-  buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 15,
-    gap: 10,
-  },
 })
-
-export default ReporteDetalleScreen

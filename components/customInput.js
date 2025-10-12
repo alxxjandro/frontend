@@ -12,6 +12,7 @@ import { COLORS, FONTS } from '../styles/globalStyles'
  * @param {string} [props.value] - Current input value.
  * @param {(text: string) => void} [props.onChangeText] - Callback for input change.
  * @param {boolean} [props.error] - If true, styles input with error state.
+ * @param {boolean} [props.password] - If true, masks input for passwords.
  * @returns {JSX.Element} Styled input with label.
  */
 export default function CustomInput({
@@ -20,8 +21,10 @@ export default function CustomInput({
   value,
   onChangeText,
   error = false,
+  password = false, // 👈 nueva prop
 }) {
   const [isFocused, setIsFocused] = useState(false)
+  const [isHidden, setIsHidden] = useState(password)
 
   return (
     <View>
@@ -45,7 +48,19 @@ export default function CustomInput({
         placeholderTextColor={COLORS.greyBorder}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        secureTextEntry={isHidden} // 👈 activa censura
+        autoCapitalize={password ? 'none' : 'sentences'} // 👈 evita mayúsculas si es password
       />
+      {/* 
+        👇 Si en el futuro quieres un icono para mostrar/ocultar contraseña:
+        <TouchableOpacity onPress={() => setIsHidden(!isHidden)} style={styles.icon}>
+          <Ionicons
+            name={isHidden ? 'eye-off' : 'eye'}
+            size={20}
+            color={COLORS.greyText}
+          />
+        </TouchableOpacity>
+      */}
     </View>
   )
 }
@@ -74,4 +89,9 @@ const styles = StyleSheet.create({
     color: COLORS.error,
     marginTop: 4,
   },
+  // icon: {
+  //   position: 'absolute',
+  //   right: 10,
+  //   top: 40,
+  // },
 })

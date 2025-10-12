@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS, FONTS } from '../styles/globalStyles'
@@ -9,23 +9,22 @@ export default function QuantityToggle({
   onQuantityChange,
   unit,
   onUnitChange,
-  unitOptions = ['unidades', 'kg', 'paquetes', 'L', 'g'],
+  unitOptions = ['Unidad', 'Kg', 'Paquete', 'Litro', 'Gramos'],
 }) {
-  const incrementQuantity = () => {
-    onQuantityChange(quantity + 1)
-  }
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
+  const incrementQuantity = () => onQuantityChange(quantity + 1)
   const decrementQuantity = () => {
-    if (quantity > 1) {
-      onQuantityChange(quantity - 1)
-    }
+    if (quantity > 1) onQuantityChange(quantity - 1)
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Cantidad del producto</Text>
-      <View style={styles.quantityControls}>
-        <View style={styles.quantityCounter}>
+      <Text style={styles.subLabel}>Cantidad</Text>
+
+      <View style={styles.controlsRow}>
+        {/* Contador numérico */}
+        <View style={styles.counterContainer}>
           <TouchableOpacity
             style={styles.counterButton}
             onPress={decrementQuantity}
@@ -37,7 +36,9 @@ export default function QuantityToggle({
               color={quantity <= 1 ? COLORS.greyBorder : COLORS.primaryBlue}
             />
           </TouchableOpacity>
-          <Text style={styles.quantityText}>{quantity}</Text>
+
+          <Text style={styles.counterValue}>{quantity}</Text>
+
           <TouchableOpacity
             style={styles.counterButton}
             onPress={incrementQuantity}
@@ -45,12 +46,16 @@ export default function QuantityToggle({
             <Ionicons name="add" size={20} color={COLORS.primaryBlue} />
           </TouchableOpacity>
         </View>
-        <View style={styles.unitDropdown}>
+
+        {/* Dropdown de unidades */}
+        <View style={styles.dropdownWrapper}>
           <CustomDropdown
             value={unit}
-            placeholder="unidades"
+            placeholder="Unidad"
             options={unitOptions}
             onSelect={onUnitChange}
+            isOpen={isDropdownOpen}
+            setIsOpen={setIsDropdownOpen}
           />
         </View>
       </View>
@@ -60,42 +65,43 @@ export default function QuantityToggle({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
-    zIndex: 2000,
+    width: '100%',
+    marginTop: 12,
   },
-  label: {
-    fontFamily: FONTS.bold,
-    fontSize: FONTS.size.md,
-    color: COLORS.primaryBlue,
-    marginBottom: 12,
+  subLabel: {
+    fontFamily: FONTS.regular,
+    fontSize: FONTS.size.sm,
+    color: COLORS.greyText,
+    marginBottom: 8,
   },
-  quantityControls: {
+  controlsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 10,
   },
-  quantityCounter: {
+  counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: COLORS.greyBorder,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
     backgroundColor: COLORS.background,
+    paddingHorizontal: 10,
+    height: 48,
   },
   counterButton: {
-    padding: 8,
+    paddingHorizontal: 6,
   },
-  quantityText: {
-    fontFamily: FONTS.bold,
+  counterValue: {
     fontSize: FONTS.size.lg,
     color: COLORS.blackText,
-    marginHorizontal: 16,
-    minWidth: 30,
     textAlign: 'center',
+    minWidth: 30,
   },
-  unitDropdown: {
+  dropdownWrapper: {
     flex: 1,
+    position: 'relative',
+    overflow: 'visible',
   },
 })

@@ -2,200 +2,186 @@ import React, { useState } from 'react'
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
   StyleSheet,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
-import { COLORS, FONTS } from '../../styles/globalStyles'
-import MoneyInput from '../../components/MoneyInput'
-import CustomButton from '../../components/customButton'
-import ExpirationToggle from '../../components/ExpirationToggle'
+import { COLORS, FONTS, globalStyles } from '../../styles/globalStyles'
+import ScreenHeader from '../../components/screenHeader'
+import CustomInput from '../../components/customInput'
 import CustomDropdown from '../../components/CustomDropdown'
+import QuantityToggle from '../../components/QuantityToggle'
+import ExpirationToggle from '../../components/ExpirationToggle'
+import CustomButton from '../../components/customButton'
 import ProductIconPicker from './Componentes/ProductIconPicker'
 
 export default function NuevoProducto() {
   const router = useRouter()
   const { mode, returnTo } = useLocalSearchParams()
+
   const [selectedIcon, setSelectedIcon] = useState('🧻')
-  const [productName, setProductName] = useState('')
-  const [category, setCategory] = useState('')
+  const [nombreProducto, setNombreProducto] = useState('Papel de baño')
+  const [categoria, setCategoria] = useState('Higiene personal')
   const [hasExpirationDate, setHasExpirationDate] = useState(false)
   const [expirationDays, setExpirationDays] = useState(7)
   const [timeUnit, setTimeUnit] = useState('Días')
+  const [quantity, setQuantity] = useState(1)
+  const [unit, setUnit] = useState('Unidad')
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
   const categoryOptions = ['Comida', 'Higiene personal', 'Enlatados', 'Frutas']
   const timeUnitOptions = ['Días', 'Semanas', 'Meses']
+  const unitOptions = ['Unidad', 'Kg', 'Paquete', 'Litro', 'Gramos']
 
   const handleGoBack = () => {
     if (mode === 'select' && returnTo) {
-      // Return to inventario with the same mode and returnTo context
       router.replace({
         pathname: '/inventario',
-        params: {
-          mode: 'select',
-          returnTo: returnTo,
-        },
+        params: { mode: 'select', returnTo },
       })
-    } else {
-      // Regular flow - go back to inventario view mode
-      router.replace('/inventario')
-    }
+    } else router.back()
   }
 
-  const handleIconSelect = (icon) => {
-    setSelectedIcon(icon)
-  }
-
-  const handleCategorySelect = (selectedCategory) => {
-    setCategory(selectedCategory)
-  }
-
-  const handleTimeUnitSelect = (unit) => {
-    setTimeUnit(unit)
-  }
-
-  const handleDaysChange = (newDays) => {
-    setExpirationDays(newDays)
+  const handleOutsidePress = () => {
+    Keyboard.dismiss()
+    setIsCategoryOpen(false)
   }
 
   const handleAddProduct = () => {
-    // Logic to add the product
     const newProduct = {
       icon: selectedIcon,
-      name: productName,
-      category,
+      name: nombreProducto,
+      category: categoria,
+      quantity,
+      unit,
       hasExpirationDate,
       expirationDays: hasExpirationDate ? expirationDays : null,
       timeUnit: hasExpirationDate ? timeUnit : null,
     }
-    console.log('Adding product:', newProduct)
-    // Navigate back to inventario using replace to avoid stack issues
-    router.replace('/inventario')
+    console.log('Producto agregado:', newProduct)
+    router.back()
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Nuevo Producto</Text>
-        <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color={COLORS.blackText} />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <View style={styles.container}>
+            <ScreenHeader
+              paddingHorizontal={0}
+              title="Nuevo producto"
+              showBackButton={true}
+              backIconName="close"
+              onBackPress={handleGoBack}
+            />
 
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Product Icon Picker */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Icono del producto</Text>
-          <ProductIconPicker
-            selectedIcon={selectedIcon}
-            onIconSelect={handleIconSelect}
-          />
-        </View>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.iconContainer}>
+                <Text style={styles.productIcon}>{selectedIcon}</Text>
+                <ProductIconPicker
+                  selectedIcon={selectedIcon}
+                  onIconSelect={setSelectedIcon}
+                />
+              </View>
 
-        {/* Product Name */}
-        <View style={styles.section}>
-          <MoneyInput
-            label="Nombre del producto"
-            value={productName}
-            onChangeText={setProductName}
-            placeholder="Papel de baño"
-            keyboardType="default"
-            numbersOnly={false}
-          />
-        </View>
+              <CustomInput
+                label="Nombre del producto"
+                placeholder="Ej. Pasta dental"
+                value={nombreProducto}
+                onChangeText={setNombreProducto}
+              />
 
-        {/* Category */}
-        <View style={[styles.section, styles.categorySection]}>
-          <CustomDropdown
-            label="Categoria"
-            value={category}
-            placeholder="Higiene personal"
-            options={categoryOptions}
-            onSelect={handleCategorySelect}
-          />
-        </View>
+              <View style={styles.dropdownWrapper}>
+                <CustomDropdown
+                  label="Categoría"
+                  value={categoria}
+                  options={categoryOptions}
+                  onSelect={setCategoria}
+                  isOpen={isCategoryOpen}
+                  setIsOpen={setIsCategoryOpen}
+                />
+              </View>
 
-        {/* Expiration Toggle */}
-        <ExpirationToggle
-          hasExpirationDate={hasExpirationDate}
-          onToggleChange={setHasExpirationDate}
-          expirationDays={expirationDays}
-          onDaysChange={handleDaysChange}
-          timeUnit={timeUnit}
-          onTimeUnitChange={handleTimeUnitSelect}
-          timeUnitOptions={timeUnitOptions}
-        />
-      </ScrollView>
+              <View style={{ marginTop: 10 }}>
+                <ExpirationToggle
+                  hasExpirationDate={hasExpirationDate}
+                  onToggleChange={setHasExpirationDate}
+                  expirationDays={expirationDays}
+                  onDaysChange={setExpirationDays}
+                  timeUnit={timeUnit}
+                  onTimeUnitChange={setTimeUnit}
+                  timeUnitOptions={timeUnitOptions}
+                />
+              </View>
 
-      {/* Bottom Button */}
-      <View style={styles.bottomContainer}>
-        <CustomButton
-          title="Agregar a entrada"
-          icon="add"
-          onPress={handleAddProduct}
-        />
-      </View>
-    </View>
+              <View style={{ marginTop: 12 }}>
+                <QuantityToggle
+                  quantity={quantity}
+                  onQuantityChange={setQuantity}
+                  unit={unit}
+                  onUnitChange={setUnit}
+                  unitOptions={unitOptions}
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.bottomContainer}>
+              <CustomButton
+                title="Agregar a entrada"
+                iconRight="add"
+                onPress={handleAddProduct}
+                backgroundColor={COLORS.primaryGreen}
+                textColor="#fff"
+                textSize={FONTS.size.sm}
+                borderRadius={8}
+                width={332}
+                height="52"
+              />
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: 332,
+    alignSelf: 'center',
     backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.greyBorder,
-  },
-  headerTitle: {
-    fontSize: FONTS.size.xxl,
-    fontFamily: FONTS.bold,
-    color: COLORS.blackText,
-  },
-  closeButton: {
-    padding: 8,
-  },
-  scrollContainer: {
-    flex: 1,
+    position: 'relative',
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
-  section: {
-    marginBottom: 24,
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  categorySection: {
-    zIndex: 4000,
+  productIcon: {
+    fontSize: 72,
   },
-  sectionLabel: {
-    fontFamily: FONTS.bold,
-    fontSize: FONTS.size.md,
-    color: COLORS.primaryBlue,
-    marginBottom: 12,
+  dropdownWrapper: {
+    marginTop: 10,
+    zIndex: 10,
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 10,
     left: 0,
     right: 0,
-    padding: 20,
-    backgroundColor: COLORS.background,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.greyBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
   },
 })

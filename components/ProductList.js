@@ -6,7 +6,7 @@ export default function ProductList({
   title = 'Productos de la salida',
   products = [],
   onAddProduct,
-  addButtonText = 'Agregar un producto del inventario +',
+  addButtonText = 'Agregar un producto del inventario',
   emptyMessage = 'Esta salida no cuenta con ningún producto...',
   navigateTo = '/inventario',
 }) {

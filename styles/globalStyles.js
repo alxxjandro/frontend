@@ -19,6 +19,7 @@ export const COLORS = {
   error: '#991B1B',
   errorAccent: '#B91C1C',
   testing: '#444',
+  transparent: 'rgba(149, 196, 22, 0)',
 }
 export const SIZE = {
   xxs: 10,

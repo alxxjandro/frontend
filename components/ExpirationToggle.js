@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, Switch, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS, FONTS } from '../styles/globalStyles'
@@ -13,19 +13,17 @@ export default function ExpirationToggle({
   onTimeUnitChange,
   timeUnitOptions = ['Días', 'Semanas', 'Meses'],
 }) {
-  const incrementDays = () => {
-    onDaysChange(expirationDays + 1)
-  }
+  // Estado para controlar la apertura del dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
+  const incrementDays = () => onDaysChange(expirationDays + 1)
   const decrementDays = () => {
-    if (expirationDays > 1) {
-      onDaysChange(expirationDays - 1)
-    }
+    if (expirationDays > 1) onDaysChange(expirationDays - 1)
   }
 
   return (
     <View style={styles.container}>
-      {/* Toggle Switch */}
+      {/* Toggle principal */}
       <View style={styles.toggleContainer}>
         <Text style={styles.toggleLabel}>
           Este producto tiene fecha de caducidad
@@ -41,14 +39,14 @@ export default function ExpirationToggle({
         />
       </View>
 
-      {/* Expiration Controls */}
+      {/* Si tiene caducidad, muestra controles */}
       {hasExpirationDate && (
-        <View style={styles.expirationSection}>
-          <Text style={styles.expirationLabel}>
-            Tiempo estimado de caducidad
-          </Text>
-          <View style={styles.expirationControls}>
-            <View style={styles.dayCounter}>
+        <View style={styles.innerSection}>
+          <Text style={styles.subLabel}>Tiempo estimado de caducidad</Text>
+
+          <View style={styles.controlsRow}>
+            {/* Contador de días */}
+            <View style={styles.counterContainer}>
               <TouchableOpacity
                 style={styles.counterButton}
                 onPress={decrementDays}
@@ -62,7 +60,9 @@ export default function ExpirationToggle({
                   }
                 />
               </TouchableOpacity>
-              <Text style={styles.dayText}>{expirationDays}</Text>
+
+              <Text style={styles.counterValue}>{expirationDays}</Text>
+
               <TouchableOpacity
                 style={styles.counterButton}
                 onPress={incrementDays}
@@ -70,12 +70,16 @@ export default function ExpirationToggle({
                 <Ionicons name="add" size={20} color={COLORS.primaryBlue} />
               </TouchableOpacity>
             </View>
-            <View style={styles.timeUnitDropdown}>
+
+            {/* Dropdown de unidad de tiempo */}
+            <View style={styles.dropdownWrapper}>
               <CustomDropdown
                 value={timeUnit}
                 placeholder="Días"
                 options={timeUnitOptions}
                 onSelect={onTimeUnitChange}
+                isOpen={isDropdownOpen}
+                setIsOpen={setIsDropdownOpen}
               />
             </View>
           </View>
@@ -87,58 +91,59 @@ export default function ExpirationToggle({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
-    zIndex: 1000,
+    width: '100%',
+    marginTop: 12,
   },
   toggleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   toggleLabel: {
     fontFamily: FONTS.bold,
-    fontSize: FONTS.size.md,
+    fontSize: FONTS.size.sm,
     color: COLORS.primaryBlue,
     flex: 1,
-    marginRight: 16,
+    marginRight: 10,
   },
-  expirationSection: {
-    marginTop: 16,
+  innerSection: {
+    marginTop: 8,
   },
-  expirationLabel: {
+  subLabel: {
     fontFamily: FONTS.regular,
     fontSize: FONTS.size.sm,
-    color: '#666',
-    marginBottom: 12,
+    color: COLORS.greyText,
+    marginBottom: 8,
   },
-  expirationControls: {
+  controlsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 10,
   },
-  dayCounter: {
+  counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: COLORS.greyBorder,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
     backgroundColor: COLORS.background,
+    paddingHorizontal: 10,
+    height: 48,
   },
   counterButton: {
-    padding: 8,
+    paddingHorizontal: 6,
   },
-  dayText: {
-    fontFamily: FONTS.bold,
+  counterValue: {
     fontSize: FONTS.size.lg,
     color: COLORS.blackText,
-    marginHorizontal: 16,
-    minWidth: 30,
     textAlign: 'center',
+    minWidth: 30,
   },
-  timeUnitDropdown: {
+  dropdownWrapper: {
     flex: 1,
+    position: 'relative',
+    overflow: 'visible',
   },
 })

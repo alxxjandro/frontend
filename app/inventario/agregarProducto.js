@@ -1,240 +1,177 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
   StyleSheet,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
-import { COLORS, FONTS } from '../../styles/globalStyles'
-import MoneyInput from '../../components/MoneyInput'
-import CustomButton from '../../components/customButton'
-import ExpirationToggle from '../../components/ExpirationToggle'
-import QuantityToggle from '../../components/QuantityToggle'
+import { COLORS, FONTS, globalStyles } from '../../styles/globalStyles'
+import ScreenHeader from '../../components/screenHeader'
+import CustomInput from '../../components/customInput'
 import CustomDropdown from '../../components/CustomDropdown'
+import QuantityToggle from '../../components/QuantityToggle'
+import ExpirationToggle from '../../components/ExpirationToggle'
+import CustomButton from '../../components/customButton'
 
 export default function AgregarProducto() {
   const router = useRouter()
-  const { productId, productName, productEmoji, productCategory } =
-    useLocalSearchParams()
+  const { productName, productEmoji, productCategory } = useLocalSearchParams()
 
-  // State for product details (pre-filled from the selected product)
   const [selectedIcon] = useState(productEmoji || '📦')
-  const [name] = useState(productName || '')
-  const [category] = useState(productCategory || '')
-
-  // State for expiration settings
+  const [nombreProducto, setNombreProducto] = useState(productName || '')
+  const [categoria, setCategoria] = useState(
+    productCategory || 'Higiene personal'
+  )
   const [hasExpirationDate, setHasExpirationDate] = useState(false)
   const [expirationDays, setExpirationDays] = useState(7)
   const [timeUnit, setTimeUnit] = useState('Días')
-
-  // State for quantity settings
   const [quantity, setQuantity] = useState(1)
-  const [unit, setUnit] = useState('unidades')
+  const [unit, setUnit] = useState('Unidad')
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
   const categoryOptions = ['Comida', 'Higiene personal', 'Enlatados', 'Frutas']
   const timeUnitOptions = ['Días', 'Semanas', 'Meses']
-  const unitOptions = ['unidades', 'kg', 'paquetes', 'L', 'g']
+  const unitOptions = ['Unidad', 'Kg', 'Paquete', 'Litro', 'Gramos']
 
-  const handleGoBack = () => {
-    router.back()
-  }
-
-  const handleCategorySelect = (selectedCategory) => {
-    // Category is disabled, so this won't be called
-    console.log('Category selection disabled')
-  }
-
-  const handleTimeUnitSelect = (selectedUnit) => {
-    setTimeUnit(selectedUnit)
-  }
-
-  const handleDaysChange = (newDays) => {
-    setExpirationDays(newDays)
-  }
-
-  const handleQuantityChange = (newQuantity) => {
-    setQuantity(newQuantity)
-  }
-
-  const handleUnitChange = (newUnit) => {
-    setUnit(newUnit)
+  const handleOutsidePress = () => {
+    Keyboard.dismiss()
+    setIsCategoryOpen(false)
   }
 
   const handleAddProduct = () => {
-    // Logic to add the product to inventory
-    const productToAdd = {
-      id: productId,
+    const newProduct = {
+      name: nombreProducto,
       icon: selectedIcon,
-      name,
-      category,
+      category: categoria,
       quantity,
       unit,
       hasExpirationDate,
       expirationDays: hasExpirationDate ? expirationDays : null,
       timeUnit: hasExpirationDate ? timeUnit : null,
     }
-    console.log('Adding product to inventory:', productToAdd)
-    // Navigate back to inventario
+    /* eslint-disable-next-line */
+    console.log('Producto agregado:', newProduct)
     router.back()
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Agregar producto</Text>
-        <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color={COLORS.blackText} />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <View style={styles.container}>
+            <ScreenHeader
+              paddingHorizontal={0}
+              title="Agregar producto"
+              showBackButton={true}
+              backIconName="close"
+            />
 
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Product Icon Display (no picker, just display) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Producto seleccionado</Text>
-          <View style={styles.productDisplay}>
-            <Text style={styles.productIcon}>{selectedIcon}</Text>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.iconContainer}>
+                <Text style={styles.productIcon}>{selectedIcon}</Text>
+              </View>
+
+              <CustomInput
+                label="Nombre del producto"
+                placeholder="Ej. Pasta dental"
+                value={nombreProducto}
+                onChangeText={setNombreProducto}
+              />
+
+              <View style={styles.dropdownWrapper}>
+                <CustomDropdown
+                  label="Categoría"
+                  value={categoria}
+                  options={categoryOptions}
+                  onSelect={setCategoria}
+                  isOpen={isCategoryOpen}
+                  setIsOpen={setIsCategoryOpen}
+                />
+              </View>
+
+              <View style={{ marginTop: 10 }}>
+                <ExpirationToggle
+                  hasExpirationDate={hasExpirationDate}
+                  onToggleChange={setHasExpirationDate}
+                  expirationDays={expirationDays}
+                  onDaysChange={setExpirationDays}
+                  timeUnit={timeUnit}
+                  onTimeUnitChange={setTimeUnit}
+                  timeUnitOptions={timeUnitOptions}
+                />
+              </View>
+
+              <View style={{ marginTop: 12 }}>
+                <QuantityToggle
+                  quantity={quantity}
+                  onQuantityChange={setQuantity}
+                  unit={unit}
+                  onUnitChange={setUnit}
+                  unitOptions={unitOptions}
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.bottomContainer}>
+              <CustomButton
+                title="Agregar a entrada"
+                iconRight="add"
+                onPress={handleAddProduct}
+                backgroundColor={COLORS.primaryGreen}
+                textColor="#fff"
+                textSize={FONTS.size.sm}
+                borderRadius={8}
+                width={332}
+                height="52"
+              />
+            </View>
           </View>
-        </View>
-
-        {/* Product Name (disabled) */}
-        <View style={styles.section}>
-          <MoneyInput
-            label="Nombre del producto"
-            value={name}
-            onChangeText={() => {}} // Disabled
-            placeholder="Nombre del producto"
-            keyboardType="default"
-            numbersOnly={false}
-            editable={false}
-          />
-        </View>
-
-        {/* Category (disabled) */}
-        <View style={[styles.section, styles.categorySection]}>
-          <Text style={styles.sectionLabel}>Categoría</Text>
-          <View style={styles.disabledInput}>
-            <Text style={styles.disabledText}>
-              {category || 'Sin categoría'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Quantity Toggle */}
-        <QuantityToggle
-          quantity={quantity}
-          onQuantityChange={handleQuantityChange}
-          unit={unit}
-          onUnitChange={handleUnitChange}
-          unitOptions={unitOptions}
-        />
-
-        {/* Expiration Toggle */}
-        <ExpirationToggle
-          hasExpirationDate={hasExpirationDate}
-          onToggleChange={setHasExpirationDate}
-          expirationDays={expirationDays}
-          onDaysChange={handleDaysChange}
-          timeUnit={timeUnit}
-          onTimeUnitChange={handleTimeUnitSelect}
-          timeUnitOptions={timeUnitOptions}
-        />
-      </ScrollView>
-
-      {/* Bottom Button */}
-      <View style={styles.bottomContainer}>
-        <CustomButton
-          title="Agregar a inventario"
-          icon="add"
-          onPress={handleAddProduct}
-        />
-      </View>
-    </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: 332,
+    alignSelf: 'center',
     backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.greyBorder,
-  },
-  headerTitle: {
-    fontSize: FONTS.size.xxl,
-    fontFamily: FONTS.bold,
-    color: COLORS.blackText,
-  },
-  closeButton: {
-    padding: 8,
-  },
-  scrollContainer: {
-    flex: 1,
+    position: 'relative',
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
-  section: {
-    marginBottom: 24,
-  },
-  categorySection: {
-    zIndex: 4000,
-  },
-  sectionLabel: {
-    fontFamily: FONTS.bold,
-    fontSize: FONTS.size.md,
-    color: COLORS.primaryBlue,
-    marginBottom: 12,
-  },
-  productDisplay: {
+  iconContainer: {
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: COLORS.cardBackgroundOne,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.greyBorder,
+    justifyContent: 'center',
+    marginVertical: 20,
   },
   productIcon: {
-    fontSize: 64,
+    fontSize: 72,
   },
-  disabledInput: {
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: COLORS.greyBorder,
-    borderRadius: 8,
-    padding: 16,
-    minHeight: 50,
-    justifyContent: 'center',
-  },
-  disabledText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONTS.size.md,
-    color: '#999',
+  dropdownWrapper: {
+    marginTop: 10,
+    zIndex: 10,
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 10,
     left: 0,
     right: 0,
-    padding: 20,
-    backgroundColor: COLORS.background,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.greyBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
   },
 })
