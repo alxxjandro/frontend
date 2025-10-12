@@ -52,7 +52,12 @@ export default function nuevoUsuario() {
               />
             </View>
 
-            <View style={[styles.dropdownFlex, { width: 332 }]}>
+            <View
+              style={[
+                styles.dropdownFlex,
+                { width: 332, display: 'flex', gap: 16 },
+              ]}
+            >
               <CustomInput
                 label="Nombre"
                 placeholder="Ingresa el nombre"

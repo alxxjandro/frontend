@@ -1,63 +1,11 @@
 import { useState } from 'react'
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, ScrollView, Text } from 'react-native'
 import { useRouter } from 'expo-router'
 
 import SearchBar from '../../../components/searchBar'
 import ExtraButton from '../../../components/extraButton'
 import ProductButton from '../../../components/productButton'
-import { COLORS, FONTS } from '../../../styles/globalStyles'
-
-// Constants
-const INITIAL_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Manzana',
-    emoji: '🍎',
-    quantity: 53,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Manzana',
-  },
-  {
-    id: 2,
-    name: 'Leche',
-    emoji: '🥛',
-    quantity: 12,
-    unit: 'L disponibles',
-    route: '/inventario/Producto/Leche',
-  },
-  {
-    id: 3,
-    name: 'Naranja',
-    emoji: '🍊',
-    quantity: 41,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Manzana',
-  },
-  {
-    id: 4,
-    name: 'Cereal',
-    emoji: '🥣',
-    quantity: 20,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Leche',
-  },
-  {
-    id: 5,
-    name: 'Huevo',
-    emoji: '🥚',
-    quantity: 199,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Manzana',
-  },
-  {
-    id: 6,
-    name: 'Tomate',
-    emoji: '🍅',
-    quantity: 4,
-    unit: 'disponibles',
-    route: '/inventario/Producto/Leche',
-  },
-]
+import { COLORS, FONTS, globalStyles } from '../../../styles/globalStyles'
 
 const FILTER_OPTIONS = [
   { key: 'tipoVista', title: 'Tipo de vista' },
@@ -73,9 +21,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 8,
   },
-  searchContainer: {
-    flex: 1,
-  },
+  searchContainer: { flex: 1 },
   filtersSection: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -83,6 +29,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 12,
     gap: 4,
+  },
+  productsWrapper: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'stretch',
   },
   productsGrid: {
     flexDirection: 'row',
@@ -93,6 +44,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 20,
+  },
+  noProductsText: {
+    width: '100%',
+    textAlign: 'center',
+    color: COLORS.greyText,
+    fontFamily: FONTS.regular,
+    fontSize: FONTS.size.md,
+    paddingVertical: 40,
   },
   addButton: {
     width: 140,
@@ -129,19 +88,9 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bold,
     color: COLORS.blackText,
   },
-  productEmoji: {
-    fontSize: 50,
-  },
+  productEmoji: { fontSize: 50 },
 })
 
-/**
- * Consolidated component that combines search, filters, and product grid
- * @param {Function} onProductPress - Callback for product selection
- * @param {Function} onFilterPress - Callback for filter modal toggle
- * @param {string} mode - Current screen mode ('view' or 'select')
- * @param {string} returnTo - Return destination when in select mode
- * @returns {JSX.Element} Complete inventario content
- */
 export default function InventarioContent({
   onProductPress,
   onFilterPress,
@@ -150,47 +99,37 @@ export default function InventarioContent({
 }) {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
-  const [products] = useState(INITIAL_PRODUCTS)
-
-  /**
-   * Filters products based on search text
-   */
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchText.toLowerCase())
+  const [products] = useState(
+    [...Array(12).keys()].map((i) => ({
+      id: i + 1,
+      name: ['Manzana', 'Leche', 'Naranja', 'Cereal', 'Huevo', 'Tomate'][i % 6],
+      emoji: ['🍎', '🥛', '🍊', '🥣', '🥚', '🍅'][i % 6],
+      quantity: [53, 12, 41, 20, 199, 4][i % 6],
+      unit: 'disponibles',
+      route: '/inventario/producto',
+    }))
   )
 
-  /**
-   * Handles add product button press
-   */
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchText.toLowerCase())
+  )
+
   const handleAddPress = () => {
     if (mode === 'select' && returnTo) {
-      // When in select mode, pass the context to nuevoProducto
       router.push({
         pathname: '/inventario/nuevoProducto',
-        params: {
-          mode: 'select',
-          returnTo: returnTo,
-        },
+        params: { mode: 'select', returnTo },
       })
     } else {
-      // Regular view mode
       router.push('/inventario/nuevoProducto')
     }
   }
 
-  /**
-   * Formats product subtitle with quantity and unit
-   * @param {number} quantity - Product quantity
-   * @param {string} unit - Product unit
-   * @returns {string} Formatted subtitle
-   */
-  const formatProductSubtitle = (quantity, unit) => {
-    return `${quantity} ${unit}`
-  }
+  const formatSubtitle = (q, u) => `${q} ${u}`
 
   return (
-    <View>
-      {/* Search Section */}
+    <View style={{ flex: 1 }}>
+      {/* Search */}
       <View style={styles.searchSection}>
         <View style={styles.searchContainer}>
           <SearchBar
@@ -200,7 +139,7 @@ export default function InventarioContent({
             onChangeText={setSearchText}
           />
         </View>
-        {/* Show "Agregar producto" button in view mode OR when coming from nuevaEntrada (but NOT from nuevaSalida) */}
+
         {(mode === 'view' ||
           (mode === 'select' && returnTo === 'nuevaEntrada')) && (
           <ExtraButton
@@ -215,7 +154,6 @@ export default function InventarioContent({
         )}
       </View>
 
-      {/* Filters Section - only show in view mode */}
       {mode === 'view' && (
         <View style={styles.filtersSection}>
           {FILTER_OPTIONS.map((filter) => (
@@ -233,21 +171,37 @@ export default function InventarioContent({
         </View>
       )}
 
-      {/* Products Grid */}
-      <View style={styles.productsGrid}>
-        {filteredProducts.map((product) => (
-          <ProductButton
-            key={product.id}
-            emoji={product.emoji}
-            emojiStyle={styles.productEmoji}
-            title={product.name}
-            subtitle={formatProductSubtitle(product.quantity, product.unit)}
-            icon="chevron-down"
-            titleStyle={styles.productTitle}
-            buttonStyle={styles.productButton}
-            onPress={() => onProductPress(product.route, product)}
-          />
-        ))}
+      <View style={styles.productsWrapper}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.productsGrid,
+            filteredProducts.length === 0 && {
+              flexGrow: 1,
+              justifyContent: 'center',
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredProducts.length === 0 ? (
+            <Text style={styles.noProductsText}>
+              No se encontraron productos
+            </Text>
+          ) : (
+            filteredProducts.map((p) => (
+              <ProductButton
+                key={p.id}
+                emoji={p.emoji}
+                emojiStyle={styles.productEmoji}
+                title={p.name}
+                subtitle={formatSubtitle(p.quantity, p.unit)}
+                icon="chevron-down"
+                titleStyle={styles.productTitle}
+                buttonStyle={styles.productButton}
+                onPress={() => onProductPress(p.route, p)}
+              />
+            ))
+          )}
+        </ScrollView>
       </View>
     </View>
   )

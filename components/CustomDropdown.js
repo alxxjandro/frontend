@@ -1,75 +1,85 @@
-import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native'
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS, FONTS } from '../styles/globalStyles'
 
-/**
- * Custom dropdown with label and selectable options.
- *
- * @component
- * @param {Object} props - Component props.
- * @param {string} props.label - Dropdown label text.
- * @param {string[]} props.options - Array of string options.
- * @param {string} [props.value] - Currently selected option.
- * @param {(value: string) => void} props.onSelect - Callback when an option is selected.
- * @param {boolean} props.isOpen - Whether dropdown is visible.
- * @param {(boolean) => void} props.setIsOpen - Function to toggle dropdown state.
- * @returns {JSX.Element} Styled dropdown with label and menu.
- */
 export default function CustomDropdown({
   label,
   options,
   value,
   onSelect,
   isOpen,
-  setIsOpen = false,
+  setIsOpen,
+  bgColor = COLORS.background,
+  borderColor = COLORS.greyBorder,
+  textColor = COLORS.blackText,
+  textAlign = 'left',
 }) {
   const handleSelect = (option) => {
     onSelect(option)
     setIsOpen(false)
   }
 
-  const borderColor = isOpen ? COLORS.primaryBlue : COLORS.greyBorder
-  const chevronColor = borderColor
-
   return (
-    <View style={styles.wrapper}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={[styles.wrapper, { zIndex: isOpen ? 9999 : 1 }]}>
+      {label && <Text style={styles.label}>{label}</Text>}
 
       <Pressable
-        style={[styles.input, { borderColor }]}
-        onPress={setIsOpen ? () => setIsOpen(!isOpen) : () => {}}
+        style={[
+          styles.input,
+          {
+            borderColor,
+            backgroundColor: bgColor,
+          },
+        ]}
+        onPress={() => setIsOpen && setIsOpen(!isOpen)}
       >
         <Text
           style={{
             flex: 1,
-            color: value ? COLORS.blackText : COLORS.greyBorder,
+            color: value ? textColor : COLORS.greyText,
             fontFamily: FONTS.regular,
-            fontSize: FONTS.size.sm,
+            fontSize: FONTS.size.md,
+            textAlign,
           }}
+          numberOfLines={1}
         >
-          {value || 'Selecciona una opción'}
+          {value || 'Seleccionar...'}
         </Text>
         <Ionicons
           name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={20}
-          color={chevronColor}
+          color={textColor}
+          style={{ marginLeft: 8 }}
         />
       </Pressable>
 
       {isOpen && (
-        <View style={styles.dropdown}>
-          <FlatList
-            data={options}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
+        <View
+          style={[
+            styles.dropdown,
+            {
+              borderColor,
+              backgroundColor: bgColor,
+            },
+          ]}
+        >
+          <ScrollView
+            style={{ maxHeight: 180 }}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled={true}
+          >
+            {options.map((item, index) => (
               <Pressable
+                key={index}
                 style={styles.option}
                 onPress={() => handleSelect(item)}
               >
-                <Text style={styles.optionText}>{item}</Text>
+                <Text style={[styles.optionText, { color: textColor }]}>
+                  {item}
+                </Text>
               </Pressable>
-            )}
-          />
+            ))}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -78,47 +88,48 @@ export default function CustomDropdown({
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 16,
-    zIndex: 10,
     flex: 1,
+    position: 'relative',
+    overflow: 'visible',
   },
   label: {
     fontFamily: FONTS.bold,
     fontSize: FONTS.size.md,
-    marginTop: 10,
     color: COLORS.primaryBlue,
     marginBottom: 4,
   },
   input: {
     minHeight: 48,
     borderWidth: 1,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.background,
+    borderRadius: 4,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
   },
   dropdown: {
     position: 'absolute',
-    borderTopWidth: 0,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    top: 72,
+    top: 64,
     left: 0,
     right: 0,
-    borderColor: COLORS.primaryBlue,
-    borderRadius: 6,
+    borderWidth: 1,
+    borderRadius: 4,
     marginTop: 4,
-    backgroundColor: COLORS.background,
     maxHeight: 150,
-    zIndex: 20,
+    zIndex: 200,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
   },
   option: {
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'flex-start',
   },
   optionText: {
     fontFamily: FONTS.regular,
-    fontSize: FONTS.size.sm,
-    color: COLORS.blackText,
+    fontSize: FONTS.size.md,
   },
 })

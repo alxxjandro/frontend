@@ -20,7 +20,9 @@ import { globalStyles, COLORS, SIZE } from '../styles/globalStyles'
  * @param {string} [props.backgroundColor] - Button background color.
  * @param {string} [props.textColor] - Text color.
  * @param {number} [props.textSize] - Text size.
+ * @param {string} [props.borderColor] - Border color.
  * @param {"left" | "text" | "right"} [props.expand] - Expands one element (left, text, or right).
+ * @param {string} [props.height] - height
  * @returns {JSX.Element} A styled button with optional icons and expand behavior.
  */
 export default function CustomButton({
@@ -37,6 +39,8 @@ export default function CustomButton({
   backgroundColor = COLORS.background,
   textColor = COLORS.whiteText,
   textSize = SIZE.md,
+  borderColor = false,
+  height = 52,
   expand,
 }) {
   const renderIcon = (iconName, color, expandTarget) => {
@@ -76,7 +80,11 @@ export default function CustomButton({
     <TouchableOpacity
       style={[
         globalStyles.customButton,
-        width && { width },
+        width && {
+          width: typeof width === 'number' ? width : width.toString(),
+        },
+        { alignSelf: 'center' },
+        height && { height },
         borderRadius && { borderRadius },
         backgroundColor && { backgroundColor },
         outlined && {
@@ -84,10 +92,17 @@ export default function CustomButton({
           borderWidth: 2,
           borderColor: COLORS.primaryBlue,
         },
+        borderColor && { borderColor, borderWidth: 2 },
       ]}
       onPress={onPress}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         {iconLeft && renderIcon(iconLeft, colorLeft, 'left')}
         <Text
           style={[

@@ -1,84 +1,109 @@
-import { View, ScrollView, StatusBar, StyleSheet } from 'react-native'
 import { useState } from 'react'
-import CustomButton from '../../components/customButton'
+import {
+  View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  StyleSheet,
+} from 'react-native'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+import { globalStyles, COLORS } from '../../styles/globalStyles'
 import ScreenHeader from '../../components/screenHeader'
 import CustomDropdown from '../../components/CustomDropdown'
 import CustomDatePicker from '../../components/CustomDatePicker'
 import ProductList from '../../components/ProductList'
-import { globalStyles, COLORS } from '../../styles/globalStyles'
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
+import CustomButton from '../../components/customButton'
+import { useRouter } from 'expo-router'
 
 export default function NuevaSalida() {
-  const [fecha, setFecha] = useState('27/09/2025')
-  const [productos, setProductos] = useState([])
-  const [motivo, setMotivo] = useState(null)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
+  const [fecha, setFecha] = useState('14/09/2025')
+  const [motivo, setMotivo] = useState('')
+  /* eslint-disable-next-line */
+  const [productos, setProductos] = useState([])
+
   const opcionesMotivo = ['Merma', 'Uso cocina', 'Uso personal']
 
-  const handleMotivoSelect = (selectedMotivo) => {
-    setMotivo(selectedMotivo)
-    setIsDropdownOpen(false)
-  }
+  const router = useRouter()
 
-  const handleDateSelect = (selectedDate) => {
-    setFecha(selectedDate)
+  const handleOutsidePress = () => {
+    Keyboard.dismiss()
+    setIsDropdownOpen(false)
     setDatePickerVisibility(false)
   }
 
   const handleRegisterSalida = () => {
-    // Logic for registering the salida
-    console.log('Registering salida:', { fecha, motivo, productos })
+    /* eslint-disable-next-line */
+    console.log('Registrando salida:', { motivo, fecha, productos })
   }
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={globalStyles.body}>
-        <View style={styles.container}>
-          <StatusBar
-            barStyle="dark-content"
-            backgroundColor={COLORS.background}
-          />
-          <View style={styles.wrapper}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              {/* Header */}
-              <ScreenHeader title="Nueva salida" />
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <View style={styles.container}>
+            <ScreenHeader
+              onBackPress={() => router.navigate('/')}
+              title="Nueva salida"
+              paddingHorizontal={0}
+            />
 
-              {/* Dropdown de motivo */}
+            {(isDropdownOpen || isDatePickerVisible) && (
+              <TouchableWithoutFeedback onPress={handleOutsidePress}>
+                <View style={styles.backdrop} />
+              </TouchableWithoutFeedback>
+            )}
+
+            <View style={styles.dropdownWrapper}>
               <CustomDropdown
                 label="Motivo de la salida"
                 value={motivo}
                 placeholder="Seleccionar"
                 options={opcionesMotivo}
                 isOpen={isDropdownOpen}
-                onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
-                onSelect={handleMotivoSelect}
+                setIsOpen={setIsDropdownOpen}
+                onSelect={setMotivo}
               />
+            </View>
 
-              {/* Date Picker */}
+            <View style={styles.dateWrapper}>
               <CustomDatePicker
                 label="Fecha de salida"
                 date={fecha}
                 isVisible={isDatePickerVisible}
                 onToggle={() => setDatePickerVisibility(true)}
-                onDateSelect={handleDateSelect}
+                onDateSelect={(d) => {
+                  setFecha(d)
+                  setDatePickerVisibility(false)
+                }}
                 onCancel={() => setDatePickerVisibility(false)}
               />
+            </View>
 
-              {/* Product List */}
-              <ProductList products={productos} />
-            </ScrollView>
+            <ProductList
+              title="Productos de la salida"
+              products={productos}
+              addButtonText="Agregar un producto del inventario"
+              emptyMessage="Esta salida no cuenta con ningún productos..."
+              navigateTo="/inventario"
+            />
 
-            {/* Fixed Bottom Button */}
-            <View style={styles.fixedBottom}>
+            <View style={styles.bottomButton}>
               <CustomButton
                 title="Registrar salida"
+                iconRight="chevron-forward"
                 onPress={handleRegisterSalida}
+                backgroundColor={COLORS.primaryBlue}
+                textColor={COLORS.whiteText}
+                textSize={12}
+                borderRadius={6}
+                width="332"
+                height="52"
               />
             </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </SafeAreaView>
     </SafeAreaProvider>
   )
@@ -87,20 +112,27 @@ export default function NuevaSalida() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: 332,
+    alignSelf: 'center',
     backgroundColor: COLORS.background,
+    position: 'relative',
   },
-  wrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
+  dropdownWrapper: {
+    height: 80,
+    zIndex: 10,
+    position: 'relative',
   },
-  fixedBottom: {
-    paddingVertical: 20,
-    backgroundColor: COLORS.background,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.greyBorder,
+  dateWrapper: {
+    paddingVertical: 8,
+    zIndex: 5,
+    position: 'relative',
+  },
+  bottomButton: {
+    height: 52,
+    marginTop: 'auto',
+    marginBottom: 10,
   },
 })

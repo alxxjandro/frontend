@@ -2,13 +2,13 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS, FONTS, globalStyles } from '../styles/globalStyles'
-
 export default function ScreenHeader({
   title,
   subtitle,
   showBackButton = true,
   onBackPress,
   backIconName = 'chevron-back',
+  paddingHorizontal = 16,
 }) {
   const router = useRouter()
 
@@ -21,7 +21,7 @@ export default function ScreenHeader({
   }
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingHorizontal }]}>
       <View style={styles.titleContainer}>
         <Text style={[globalStyles.h1, styles.title]}>{title}</Text>
         {subtitle && (
@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 20,
-    paddingHorizontal: 16,
     paddingTop: 10,
   },
   titleContainer: {

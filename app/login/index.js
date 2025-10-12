@@ -110,6 +110,7 @@ export default function LoginScreen() {
             }}
             secureTextEntry
             error={showError}
+            password={true}
           />
 
           {/* Olvidaste contraseña */}
