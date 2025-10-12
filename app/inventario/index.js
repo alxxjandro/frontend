@@ -9,8 +9,12 @@ import { globalStyles, COLORS } from '../../styles/globalStyles'
 
 const TOTAL_PRODUCTS = 59
 
+// Modal configurations
 const MODAL_CONFIGS = {
-  tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
+  tipoVista: {
+    title: 'Tipo de vista',
+    options: ['Completa', 'Compacta'],
+  },
   ordenarPor: {
     title: 'Ordenar por',
     options: [
@@ -34,18 +38,38 @@ const MODAL_CONFIGS = {
   },
 }
 
+/**
+ * Inventario Screen - Displays product inventory with search, filters, and product grid
+ * @param {Object} props - Component props
+ * @returns {JSX.Element} Inventario screen component
+ */
+
 export default function InventarioScreen() {
   const router = useRouter()
   const { mode = 'view', returnTo } = useLocalSearchParams()
+
   const [modalStates, setModalStates] = useState({
     tipoVista: false,
     ordenarPor: false,
     categorias: false,
   })
 
-  const toggleModal = (modalName) =>
-    setModalStates((prev) => ({ ...prev, [modalName]: !prev[modalName] }))
+  /**
+   * Toggles modal visibility state
+   * @param {string} modalName - Name of the modal to toggle
+   */
+  const toggleModal = (modalName) => {
+    setModalStates((prev) => ({
+      ...prev,
+      [modalName]: !prev[modalName],
+    }))
+  }
 
+  /**
+   * Handles product selection based on mode
+   * @param {string} productRoute - Route to navigate to
+   * @param {Object} product - Product data
+   */
   const handleProductPress = (productRoute, product) => {
     if (mode === 'select') {
       router.push({
@@ -58,20 +82,13 @@ export default function InventarioScreen() {
         },
       })
     } else {
-      // ✅ Aseguramos ruta y pasamos datos del producto
-      router.push({
-        pathname: productRoute.toLowerCase(), // '/inventario/producto'
-        params: {
-          id: product.id,
-          name: product.name,
-          emoji: product.emoji,
-          quantity: product.quantity,
-          unit: product.unit,
-        },
-      })
+      router.push(productRoute)
     }
   }
 
+  /**
+   * Handles back navigation based on mode
+   */
   const handleBackToHome = () => {
     if (mode === 'select') {
       returnTo ? router.replace(`/${returnTo}`) : router.back()
@@ -119,7 +136,15 @@ export default function InventarioScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scrollContainer: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingBottom: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
 })
