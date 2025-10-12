@@ -1,21 +1,38 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { Link } from 'expo-router'
-import { COLORS, FONTS } from '../styles/globalStyles'
-
+import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { COLORS, FONTS, globalStyles } from '../styles/globalStyles'
 export default function ScreenHeader({
   title,
-  backRoute = '/',
+  subtitle,
   showBackButton = true,
+  onBackPress,
+  backIconName = 'chevron-back',
+  paddingHorizontal = 16,
 }) {
+  const router = useRouter()
+
+  const handleBackPress = () => {
+    if (onBackPress) {
+      onBackPress()
+    } else {
+      router.back()
+    }
+  }
+
   return (
-    <View style={styles.header}>
-      <Text style={styles.title}>{title}</Text>
+    <View style={[styles.header, { paddingHorizontal }]}>
+      <View style={styles.titleContainer}>
+        <Text style={[globalStyles.h1, styles.title]}>{title}</Text>
+        {subtitle && (
+          <Text style={[globalStyles.h2, styles.subtitle]}>{subtitle}</Text>
+        )}
+      </View>
+
       {showBackButton && (
-        <Link href={backRoute} asChild>
-          <TouchableOpacity style={styles.backIcon}>
-            <Text style={styles.backIconText}>{'<'}</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Ionicons name={backIconName} size={28} color={COLORS.blackText} />
+        </TouchableOpacity>
       )}
     </View>
   )
@@ -25,22 +42,24 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 20,
+    paddingTop: 10,
+  },
+  titleContainer: {
+    flex: 1,
   },
   title: {
-    fontFamily: FONTS.bold,
-    fontSize: FONTS.size.xxl,
     color: COLORS.blackText,
+    marginBottom: 2,
   },
-  backIcon: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+  subtitle: {
+    color: '#666',
+    fontFamily: FONTS.regular,
+    fontWeight: '300',
   },
-  backIconText: {
-    color: COLORS.blackText,
-    fontSize: 25,
-    fontFamily: FONTS.bold,
+  backButton: {
+    padding: 8,
+    marginTop: -4,
   },
 })
