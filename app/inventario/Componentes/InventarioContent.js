@@ -1,0 +1,208 @@
+import { useState } from 'react'
+import { View, StyleSheet, ScrollView, Text } from 'react-native'
+import { useRouter } from 'expo-router'
+
+import SearchBar from '../../../components/searchBar'
+import ExtraButton from '../../../components/extraButton'
+import ProductButton from '../../../components/productButton'
+import { COLORS, FONTS, globalStyles } from '../../../styles/globalStyles'
+
+const FILTER_OPTIONS = [
+  { key: 'tipoVista', title: 'Tipo de vista' },
+  { key: 'ordenarPor', title: 'Ordenar por' },
+  { key: 'categorias', title: 'Categorías' },
+]
+
+const styles = StyleSheet.create({
+  searchSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  searchContainer: { flex: 1 },
+  filtersSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    gap: 4,
+  },
+  productsWrapper: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'stretch',
+  },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
+  },
+  noProductsText: {
+    width: '100%',
+    textAlign: 'center',
+    color: COLORS.greyText,
+    fontFamily: FONTS.regular,
+    fontSize: FONTS.size.md,
+    paddingVertical: 40,
+  },
+  addButton: {
+    width: 140,
+    height: 41,
+    backgroundColor: COLORS.primaryGreen,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterButton: {
+    height: 35,
+    backgroundColor: COLORS.primaryBlue,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 100,
+    maxWidth: 120,
+  },
+  productButton: {
+    borderRadius: 12,
+    width: 165,
+    height: 165,
+    backgroundColor: COLORS.cardBackgroundOne,
+  },
+  buttonText: {
+    color: COLORS.whiteText,
+    fontSize: FONTS.size.xxs,
+    fontFamily: FONTS.regular,
+    textAlign: 'center',
+  },
+  productTitle: {
+    fontSize: FONTS.size.md,
+    fontFamily: FONTS.bold,
+    color: COLORS.blackText,
+  },
+  productEmoji: { fontSize: 50 },
+})
+
+export default function InventarioContent({
+  onProductPress,
+  onFilterPress,
+  mode,
+  returnTo,
+}) {
+  const router = useRouter()
+  const [searchText, setSearchText] = useState('')
+  const [products] = useState(
+    [...Array(12).keys()].map((i) => ({
+      id: i + 1,
+      name: ['Manzana', 'Leche', 'Naranja', 'Cereal', 'Huevo', 'Tomate'][i % 6],
+      emoji: ['🍎', '🥛', '🍊', '🥣', '🥚', '🍅'][i % 6],
+      quantity: [53, 12, 41, 20, 199, 4][i % 6],
+      unit: 'disponibles',
+      route: '/inventario/producto',
+    }))
+  )
+
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchText.toLowerCase())
+  )
+
+  const handleAddPress = () => {
+    if (mode === 'select' && returnTo) {
+      router.push({
+        pathname: '/inventario/nuevoProducto',
+        params: { mode: 'select', returnTo },
+      })
+    } else {
+      router.push('/inventario/nuevoProducto')
+    }
+  }
+
+  const formatSubtitle = (q, u) => `${q} ${u}`
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Search */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchContainer}>
+          <SearchBar
+            icon="search-outline"
+            placeholder="Buscar producto"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+        </View>
+
+        {(mode === 'view' ||
+          (mode === 'select' && returnTo === 'nuevaEntrada')) && (
+          <ExtraButton
+            color={COLORS.background}
+            style={styles.addButton}
+            textStyle={styles.buttonText}
+            title="Agregar producto"
+            icon="add"
+            size={15}
+            onPress={handleAddPress}
+          />
+        )}
+      </View>
+
+      {mode === 'view' && (
+        <View style={styles.filtersSection}>
+          {FILTER_OPTIONS.map((filter) => (
+            <ExtraButton
+              key={filter.key}
+              color={COLORS.whiteText}
+              style={styles.filterButton}
+              textStyle={styles.buttonText}
+              title={filter.title}
+              icon="chevron-down"
+              size={15}
+              onPress={() => onFilterPress(filter.key)}
+            />
+          ))}
+        </View>
+      )}
+
+      <View style={styles.productsWrapper}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.productsGrid,
+            filteredProducts.length === 0 && {
+              flexGrow: 1,
+              justifyContent: 'center',
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredProducts.length === 0 ? (
+            <Text style={styles.noProductsText}>
+              No se encontraron productos
+            </Text>
+          ) : (
+            filteredProducts.map((p) => (
+              <ProductButton
+                key={p.id}
+                emoji={p.emoji}
+                emojiStyle={styles.productEmoji}
+                title={p.name}
+                subtitle={formatSubtitle(p.quantity, p.unit)}
+                icon="chevron-down"
+                titleStyle={styles.productTitle}
+                buttonStyle={styles.productButton}
+                onPress={() => onProductPress(p.route, p)}
+              />
+            ))
+          )}
+        </ScrollView>
+      </View>
+    </View>
+  )
+}
