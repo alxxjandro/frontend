@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
-import ScreenHeader from '../../components/screenHeader'
+import ScreenHeader from '../../components/ScreenHeader'
 import CustomButton from '../../components/customButton'
 import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
 import { mockReports } from './data/mockData'

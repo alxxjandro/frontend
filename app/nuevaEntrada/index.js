@@ -7,7 +7,7 @@ import {
 } from 'react-native'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { globalStyles, COLORS } from '../../styles/globalStyles'
-import ScreenHeader from '../../components/screenHeader'
+import ScreenHeader from '../../components/ScreenHeader'
 import CustomDropdown from '../../components/CustomDropdown'
 import CustomDatePicker from '../../components/CustomDatePicker'
 import CustomButton from '../../components/customButton'

@@ -10,7 +10,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS, FONTS, globalStyles } from '../../styles/globalStyles'
-import ScreenHeader from '../../components/screenHeader'
+import ScreenHeader from '../../components/ScreenHeader'
 import CustomInput from '../../components/customInput'
 import CustomDropdown from '../../components/CustomDropdown'
 import QuantityToggle from '../../components/QuantityToggle'
