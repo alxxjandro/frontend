@@ -11,21 +11,18 @@ import { router } from 'expo-router'
 import { COLORS, FONTS, globalStyles } from '../../styles/globalStyles'
 import CustomInput from '../../components/customInput'
 import CustomButton from '../../components/customButton'
-
-const CORRECT_USER = 'admin'
-const CORRECT_PASS = 'admin'
+import { useAuth } from '../../hooks/useAuth'
+import { ActivityIndicator } from 'react-native'
 
 export default function LoginScreen() {
   const [user, setUser] = useState('')
   const [password, setPassword] = useState('')
-  const [showError, setShowError] = useState(false)
+  const { handleLogin, loading, error: showError } = useAuth()
 
-  const handleLogin = () => {
-    if (user === CORRECT_USER && password === CORRECT_PASS) {
-      setShowError(false)
+  const onLogin = async () => {
+    const res = await handleLogin(user, password)
+    if (res.success) {
       router.push('/')
-    } else {
-      setShowError(true)
     }
   }
 
@@ -93,10 +90,7 @@ export default function LoginScreen() {
             label="Usuario"
             placeholder="Usuario"
             value={user}
-            onChangeText={(t) => {
-              setUser(t)
-              if (showError) setShowError(false)
-            }}
+            onChangeText={setUser}
             error={showError}
           />
 
@@ -104,10 +98,7 @@ export default function LoginScreen() {
             label="Contraseña"
             placeholder="Contraseña"
             value={password}
-            onChangeText={(t) => {
-              setPassword(t)
-              if (showError) setShowError(false)
-            }}
+            onChangeText={setPassword}
             secureTextEntry
             error={showError}
             password={true}
@@ -129,16 +120,15 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Botón */}
           <CustomButton
             title="Iniciar sesión"
-            onPress={handleLogin}
+            onPress={onLogin}
             width={332}
             borderRadius={4}
             backgroundColor={COLORS.primaryBlue}
           />
 
-          {/* Error */}
+          {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
           {showError && (
             <Text
               style={{
@@ -149,7 +139,7 @@ export default function LoginScreen() {
                 color: COLORS.error,
               }}
             >
-              Usuario o contraseña incorrecta
+              {showError}
             </Text>
           )}
         </View>
