@@ -15,9 +15,10 @@ export function useInventario() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getAllInventario()
-      setInventario(data)
-      return { success: true, data }
+      const response = await getAllInventario()
+      const inventario = response.data || response
+      setInventario(inventario)
+      return { success: true, data: inventario }
     } catch (err) {
       setError(err.message)
       return { success: false, message: err.message }
@@ -30,9 +31,10 @@ export function useInventario() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getInventarioById(id)
-      setSelected(data)
-      return { success: true, data }
+      const response = await getInventarioById(id)
+      const inventario = response.data || response
+      setSelected(inventario)
+      return { success: true, data: inventario }
     } catch (err) {
       setError(err.message)
       return { success: false, message: err.message }
@@ -45,13 +47,16 @@ export function useInventario() {
     setLoading(true)
     setError(null)
     try {
-      const data = await updateInventario(id, payload)
+      const response = await updateInventario(id, payload)
+      const inventario = response.data || response
       // update local state if present
       setInventario((prev) =>
-        prev.map((it) => (it.idInventario === data.idInventario ? data : it))
+        prev.map((it) =>
+          it.idInventario === inventario.idInventario ? inventario : it
+        )
       )
-      setSelected(data)
-      return { success: true, data }
+      setSelected(inventario)
+      return { success: true, data: inventario }
     } catch (err) {
       setError(err.message)
       return { success: false, message: err.message }
