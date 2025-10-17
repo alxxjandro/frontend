@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { View, ScrollView, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
@@ -6,42 +6,52 @@ import ScreenHeader from '../../components/ScreenHeader'
 import InventarioContent from './Componentes/InventarioContent'
 import FilterModal from './Componentes/FilterModal'
 import { globalStyles, COLORS } from '../../styles/globalStyles'
-
-const TOTAL_PRODUCTS = 59
-
-const MODAL_CONFIGS = {
-  tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
-  ordenarPor: {
-    title: 'Ordenar por',
-    options: [
-      'Nombre',
-      'Cantidad',
-      'Categoria',
-      'FechaEntrada',
-      'FechaSalida',
-      'Caducidad',
-    ],
-  },
-  categorias: {
-    title: 'Categorías',
-    options: [
-      'Categoria 1',
-      'Categoria 2',
-      'Categoria 3',
-      'Categoria 4',
-      'Categoria 5',
-    ],
-  },
-}
+import { useInventario } from '../../hooks/useInventario'
+import { useProducto } from '../../hooks/useProducto'
 
 export default function InventarioScreen() {
   const router = useRouter()
   const { mode = 'view', returnTo } = useLocalSearchParams()
+  const { inventario, fetchAll } = useInventario()
+  const {
+    productos,
+    categorias,
+    fetchAll: fetchProductos,
+    fetchCategorias,
+  } = useProducto()
   const [modalStates, setModalStates] = useState({
     tipoVista: false,
     ordenarPor: false,
     categorias: false,
   })
+
+  useEffect(() => {
+    fetchAll()
+    fetchProductos()
+    fetchCategorias()
+  }, [])
+
+  const MODAL_CONFIGS = useMemo(
+    () => ({
+      tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
+      ordenarPor: {
+        title: 'Ordenar por',
+        options: [
+          'Nombre',
+          'Cantidad',
+          'Categoria',
+          'FechaEntrada',
+          'FechaSalida',
+          'Caducidad',
+        ],
+      },
+      categorias: {
+        title: 'Categorías',
+        options: categorias.map((c) => c.nombreDepartamento),
+      },
+    }),
+    [categorias]
+  )
 
   const toggleModal = (modalName) =>
     setModalStates((prev) => ({ ...prev, [modalName]: !prev[modalName] }))
@@ -51,22 +61,23 @@ export default function InventarioScreen() {
       router.push({
         pathname: '/inventario/agregarProducto',
         params: {
-          productId: product.id,
+          productId: product.productId,
           productName: product.name,
           productEmoji: product.emoji,
-          productCategory: 'Sin categoría',
+          productCategory: product.category,
         },
       })
     } else {
-      // ✅ Aseguramos ruta y pasamos datos del producto
       router.push({
-        pathname: productRoute.toLowerCase(), // '/inventario/producto'
+        pathname: productRoute.toLowerCase(),
         params: {
           id: product.id,
+          productId: product.productId,
           name: product.name,
           emoji: product.emoji,
           quantity: product.quantity,
           unit: product.unit,
+          category: product.category,
         },
       })
     }
@@ -91,11 +102,13 @@ export default function InventarioScreen() {
           >
             <ScreenHeader
               title="Inventario"
-              subtitle={`(${TOTAL_PRODUCTS} productos)`}
+              subtitle={`(${inventario.length} productos)`}
               onBackPress={handleBackToHome}
             />
 
             <InventarioContent
+              inventario={inventario}
+              productos={productos}
               onProductPress={handleProductPress}
               onFilterPress={toggleModal}
               mode={mode}
@@ -119,7 +132,7 @@ export default function InventarioScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: COLORS.background, minWidth: 332 },
   scrollContainer: { flex: 1 },
   scrollContent: { flexGrow: 1, paddingBottom: 20 },
 })

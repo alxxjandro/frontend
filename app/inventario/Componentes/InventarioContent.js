@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { View, StyleSheet, ScrollView, Text } from 'react-native'
 import { useRouter } from 'expo-router'
-
 import SearchBar from '../../../components/searchBar'
 import ExtraButton from '../../../components/extraButton'
 import ProductButton from '../../../components/productButton'
@@ -92,6 +91,8 @@ const styles = StyleSheet.create({
 })
 
 export default function InventarioContent({
+  inventario = [],
+  productos = [],
   onProductPress,
   onFilterPress,
   mode,
@@ -99,16 +100,21 @@ export default function InventarioContent({
 }) {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
-  const [products] = useState(
-    [...Array(12).keys()].map((i) => ({
-      id: i + 1,
-      name: ['Manzana', 'Leche', 'Naranja', 'Cereal', 'Huevo', 'Tomate'][i % 6],
-      emoji: ['🍎', '🥛', '🍊', '🥣', '🥚', '🍅'][i % 6],
-      quantity: [53, 12, 41, 20, 199, 4][i % 6],
+
+  const products = inventario.map((item) => {
+    const producto = productos.find(
+      (p) => p.idProducto === item.idProducto_producto
+    )
+    return {
+      id: item.idInventario,
+      name: producto?.nombreProducto || `Producto ${item.idProducto_producto}`,
+      emoji: producto?.emoji || '📦',
+      category: producto?.departamento?.nombreDepartamento || 'Sin categoría',
+      quantity: parseFloat(item.cantidadTotal),
       unit: 'disponibles',
       route: '/inventario/producto',
-    }))
-  )
+    }
+  })
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchText.toLowerCase())
