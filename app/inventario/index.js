@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, ScrollView, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
@@ -6,8 +6,7 @@ import ScreenHeader from '../../components/ScreenHeader'
 import InventarioContent from './Componentes/InventarioContent'
 import FilterModal from './Componentes/FilterModal'
 import { globalStyles, COLORS } from '../../styles/globalStyles'
-
-const TOTAL_PRODUCTS = 59
+import { useInventario } from '../../hooks/useInventario'
 
 const MODAL_CONFIGS = {
   tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
@@ -37,11 +36,16 @@ const MODAL_CONFIGS = {
 export default function InventarioScreen() {
   const router = useRouter()
   const { mode = 'view', returnTo } = useLocalSearchParams()
+  const { inventario, fetchAll } = useInventario()
   const [modalStates, setModalStates] = useState({
     tipoVista: false,
     ordenarPor: false,
     categorias: false,
   })
+
+  useEffect(() => {
+    fetchAll()
+  }, [])
 
   const toggleModal = (modalName) =>
     setModalStates((prev) => ({ ...prev, [modalName]: !prev[modalName] }))
@@ -58,9 +62,8 @@ export default function InventarioScreen() {
         },
       })
     } else {
-      // ✅ Aseguramos ruta y pasamos datos del producto
       router.push({
-        pathname: productRoute.toLowerCase(), // '/inventario/producto'
+        pathname: productRoute.toLowerCase(),
         params: {
           id: product.id,
           name: product.name,
@@ -91,11 +94,12 @@ export default function InventarioScreen() {
           >
             <ScreenHeader
               title="Inventario"
-              subtitle={`(${TOTAL_PRODUCTS} productos)`}
+              subtitle={`(${inventario.length} productos)`}
               onBackPress={handleBackToHome}
             />
 
             <InventarioContent
+              inventario={inventario}
               onProductPress={handleProductPress}
               onFilterPress={toggleModal}
               mode={mode}
@@ -119,7 +123,7 @@ export default function InventarioScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: COLORS.background, minWidth: 332 },
   scrollContainer: { flex: 1 },
   scrollContent: { flexGrow: 1, paddingBottom: 20 },
 })
