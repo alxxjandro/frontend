@@ -22,7 +22,7 @@ export default function ProductList({
         <View style={styles.productList}>
           {products.map((product, index) => (
             <View key={index} style={styles.productItem}>
-              <Text style={styles.productText}>{product}</Text>
+              <Text style={styles.productText}>{product.icon} {product.name} - {product.quantity} {product.unit}</Text>
             </View>
           ))}
         </View>
