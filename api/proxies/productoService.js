@@ -83,9 +83,25 @@ const ProductoServiceProxy = () => {
     return await response.json()
   }
 
+  async function getCategorias() {
+    const response = await fetch(`${API_BASE_URL}/productos/categorias`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Error al obtener categorías')
+    }
+
+    return await response.json()
+  }
+
   return {
     getAllProductos,
     getProductoById,
+    getCategorias,
     createProducto,
     updateProducto,
     deleteProducto,

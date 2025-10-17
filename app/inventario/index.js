@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { View, ScrollView, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context'
@@ -7,36 +7,18 @@ import InventarioContent from './Componentes/InventarioContent'
 import FilterModal from './Componentes/FilterModal'
 import { globalStyles, COLORS } from '../../styles/globalStyles'
 import { useInventario } from '../../hooks/useInventario'
-
-const MODAL_CONFIGS = {
-  tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
-  ordenarPor: {
-    title: 'Ordenar por',
-    options: [
-      'Nombre',
-      'Cantidad',
-      'Categoria',
-      'FechaEntrada',
-      'FechaSalida',
-      'Caducidad',
-    ],
-  },
-  categorias: {
-    title: 'Categorías',
-    options: [
-      'Categoria 1',
-      'Categoria 2',
-      'Categoria 3',
-      'Categoria 4',
-      'Categoria 5',
-    ],
-  },
-}
+import { useProducto } from '../../hooks/useProducto'
 
 export default function InventarioScreen() {
   const router = useRouter()
   const { mode = 'view', returnTo } = useLocalSearchParams()
   const { inventario, fetchAll } = useInventario()
+  const {
+    productos,
+    categorias,
+    fetchAll: fetchProductos,
+    fetchCategorias,
+  } = useProducto()
   const [modalStates, setModalStates] = useState({
     tipoVista: false,
     ordenarPor: false,
@@ -45,7 +27,31 @@ export default function InventarioScreen() {
 
   useEffect(() => {
     fetchAll()
+    fetchProductos()
+    fetchCategorias()
   }, [])
+
+  const MODAL_CONFIGS = useMemo(
+    () => ({
+      tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
+      ordenarPor: {
+        title: 'Ordenar por',
+        options: [
+          'Nombre',
+          'Cantidad',
+          'Categoria',
+          'FechaEntrada',
+          'FechaSalida',
+          'Caducidad',
+        ],
+      },
+      categorias: {
+        title: 'Categorías',
+        options: categorias.map((c) => c.nombreDepartamento),
+      },
+    }),
+    [categorias]
+  )
 
   const toggleModal = (modalName) =>
     setModalStates((prev) => ({ ...prev, [modalName]: !prev[modalName] }))
@@ -55,10 +61,10 @@ export default function InventarioScreen() {
       router.push({
         pathname: '/inventario/agregarProducto',
         params: {
-          productId: product.id,
+          productId: product.productId,
           productName: product.name,
           productEmoji: product.emoji,
-          productCategory: 'Sin categoría',
+          productCategory: product.category,
         },
       })
     } else {
@@ -66,10 +72,12 @@ export default function InventarioScreen() {
         pathname: productRoute.toLowerCase(),
         params: {
           id: product.id,
+          productId: product.productId,
           name: product.name,
           emoji: product.emoji,
           quantity: product.quantity,
           unit: product.unit,
+          category: product.category,
         },
       })
     }
@@ -100,6 +108,7 @@ export default function InventarioScreen() {
 
             <InventarioContent
               inventario={inventario}
+              productos={productos}
               onProductPress={handleProductPress}
               onFilterPress={toggleModal}
               mode={mode}

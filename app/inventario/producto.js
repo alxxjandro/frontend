@@ -3,13 +3,17 @@ import { useEffect } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import ProductDetailScreen from './Componentes/ProductDetailScreen'
 import { useInventario } from '../../hooks/useInventario'
+import { useProducto } from '../../hooks/useProducto'
 
 export default function Producto() {
   const params = useLocalSearchParams()
-  const { selected, fetchById } = useInventario()
+  const { selected: inventarioData, fetchById: fetchInventarioById } =
+    useInventario()
+  const { selected: productoData, fetchById: fetchProductoById } = useProducto()
 
   const {
     id,
+    productId,
     name = 'Producto',
     emoji = '📦',
     quantity = 0,
@@ -19,17 +23,22 @@ export default function Producto() {
 
   useEffect(() => {
     if (id) {
-      fetchById(parseInt(id))
+      fetchInventarioById(parseInt(id))
     }
-  }, [id])
+    if (productId) {
+      fetchProductoById(parseInt(productId))
+    }
+  }, [id, productId])
 
   return (
     <ProductDetailScreen
-      productName={name}
+      productName={productoData?.nombreProducto || name}
       emoji={emoji}
-      category={category}
+      category={productoData?.departamento?.nombreDepartamento || category}
       quantity={
-        selected ? parseFloat(selected.cantidadTotal) : parseInt(quantity) || 0
+        inventarioData
+          ? parseFloat(inventarioData.cantidadTotal)
+          : parseInt(quantity) || 0
       }
       unit={unit}
     />
