@@ -14,6 +14,7 @@ import CustomButton from '../../components/customButton'
 import MoneyInput from '../../components/MoneyInput'
 import ProductList from '../../components/ProductList'
 import { useRouter } from 'expo-router'
+import { useEntradas } from '../../hooks/useEntradas'
 
 export default function NuevaEntrada() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -26,6 +27,7 @@ export default function NuevaEntrada() {
   // eslint-disable-next-line
   const [productos, setProductos] = useState([])
   const [opcionEntrada, setOpcionEntrada] = useState('')
+  const { save, loading, error} = useEntradas()
   const opcionesEntrada = ['Compra', 'Donación']
 
   const handleOutsidePress = () => {
@@ -33,6 +35,31 @@ export default function NuevaEntrada() {
     setIsDropdownOpen(false)
     setDatePickerVisibility(false)
   }
+
+  const handleRegistrarEntrada = async () => {
+    if (!fecha || !opcionEntrada) {
+      alert('Por favor completa todos los campos obligatorios.')
+      return
+    }
+
+  const entradaData = {
+    tipoEntrada: opcionEntrada,
+    fechaEntrada: fecha,
+    monto: opcionEntrada === 'Compra' ? parseFloat(monto) : 0,
+    productos: productos,
+    }
+
+    const result = await save(entradaData)
+
+    if (result.success) {
+      alert('Entrada registrada exitosamente.')
+      router.push('/nuevaEntrada')
+    }
+    else {
+      alert('Error al registrar la entrada: ' + (error || 'Inténtalo de nuevo.'))
+    }
+  }
+
 
   return (
     <SafeAreaProvider>
@@ -113,7 +140,7 @@ export default function NuevaEntrada() {
                 />
                 <CustomButton
                   title="Registrar Entrada"
-                  onPress={() => {}}
+                  onPress={handleRegistrarEntrada}
                   borderRadius={4}
                   backgroundColor={COLORS.primaryBlue}
                   iconRight="chevron-forward"
