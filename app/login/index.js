@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -29,6 +29,10 @@ export default function LoginScreen() {
   const handleOutsidePress = () => {
     Keyboard.dismiss()
   }
+
+  useEffect(() => {
+    handleLogin('alexander','hola')
+  }, [])
 
   return (
     <TouchableWithoutFeedback onPress={handleOutsidePress}>

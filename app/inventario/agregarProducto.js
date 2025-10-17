@@ -18,8 +18,11 @@ import ExpirationToggle from '../../components/ExpirationToggle'
 import CustomButton from '../../components/customButton'
 
 export default function AgregarProducto() {
+  const params = useLocalSearchParams() || {}
+  const returnTo = params.returnTo ?? 'nuevaEntrada'  // fallback por si no se pasó
+
   const router = useRouter()
-  const { productName, productEmoji, productCategory } = useLocalSearchParams()
+  const { productName, productEmoji, productCategory, productID, idUnidad } = useLocalSearchParams()
 
   const [selectedIcon] = useState(productEmoji || '📦')
   const [nombreProducto, setNombreProducto] = useState(productName || '')
@@ -52,10 +55,12 @@ export default function AgregarProducto() {
       hasExpirationDate,
       expirationDays: hasExpirationDate ? expirationDays : null,
       timeUnit: hasExpirationDate ? timeUnit : null,
+      idProducto: productID || 1,
+      idUnidad: idUnidad || 1,
     }
     /* eslint-disable-next-line */
     console.log('Producto agregado:', newProduct)
-    router.back()
+    router.push({pathname: `/${returnTo}`, params: { newProduct: JSON.stringify(newProduct) }})
   }
 
   return (
