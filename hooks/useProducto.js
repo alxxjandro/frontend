@@ -6,11 +6,13 @@ export function useProducto() {
   const [loading, setLoading] = useState(false)
   const [productos, setProductos] = useState([])
   const [selected, setSelected] = useState(null)
+  const [categorias, setCategorias] = useState([])
   const [error, setError] = useState(null)
 
   const {
     getAllProductos,
     getProductoById,
+    getCategorias,
     createProducto,
     updateProducto,
     deleteProducto,
@@ -103,13 +105,31 @@ export function useProducto() {
     }
   }
 
+  const fetchCategorias = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await getCategorias()
+      const categorias = response.data || response
+      setCategorias(categorias)
+      return { success: true, data: categorias }
+    } catch (err) {
+      setError(err.message)
+      return { success: false, message: err.message }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     loading,
     productos,
     selected,
+    categorias,
     error,
     fetchAll,
     fetchById,
+    fetchCategorias,
     create,
     save,
     remove,

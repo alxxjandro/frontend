@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
 
 export default function InventarioContent({
   inventario = [],
+  productos = [],
   onProductPress,
   onFilterPress,
   mode,
@@ -100,14 +101,20 @@ export default function InventarioContent({
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
 
-  const products = inventario.map((item) => ({
-    id: item.idInventario,
-    name: `Producto ${item.idProducto_producto}`,
-    emoji: '📦',
-    quantity: parseFloat(item.cantidadTotal),
-    unit: 'disponibles',
-    route: '/inventario/producto',
-  }))
+  const products = inventario.map((item) => {
+    const producto = productos.find(
+      (p) => p.idProducto === item.idProducto_producto
+    )
+    return {
+      id: item.idInventario,
+      name: producto?.nombreProducto || `Producto ${item.idProducto_producto}`,
+      emoji: producto?.emoji || '📦',
+      category: producto?.departamento?.nombreDepartamento || 'Sin categoría',
+      quantity: parseFloat(item.cantidadTotal),
+      unit: 'disponibles',
+      route: '/inventario/producto',
+    }
+  })
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchText.toLowerCase())
