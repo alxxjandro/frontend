@@ -84,7 +84,7 @@ export default function CustomDatePicker({
 const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
-    zIndex: 1,
+    zIndex: -1,
   },
   label: {
     fontFamily: FONTS.bold,

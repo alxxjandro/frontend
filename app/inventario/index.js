@@ -11,7 +11,9 @@ import { useProducto } from '../../hooks/useProducto'
 
 export default function InventarioScreen() {
   const router = useRouter()
-  const { mode = 'view', returnTo } = useLocalSearchParams()
+  const { mode = 'view'} = useLocalSearchParams()
+  const params = useLocalSearchParams() || {}
+  const returnTo = params.returnTo || null
   const { inventario, fetchAll } = useInventario()
   const {
     productos,
@@ -65,6 +67,8 @@ export default function InventarioScreen() {
           productName: product.name,
           productEmoji: product.emoji,
           productCategory: product.category,
+          idUnidad: product.idUnidad,
+          returnTo,
         },
       })
     } else {

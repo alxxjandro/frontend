@@ -31,6 +31,7 @@ const EntradasServiceProxy = () => {
   }
 
   async function createEntrada(entradaData) {
+    console.log('Payload enviado:', entradaData)
     const response = await fetch(`${API_BASE_URL}/entradas`, {
       method: 'POST',
       headers: {
@@ -38,10 +39,13 @@ const EntradasServiceProxy = () => {
       },
       body: JSON.stringify(entradaData),
     })
+    console.log('Status de respuesta:', response.status) // Verifica el código HTTP
+    const respText = await response.text()
+    console.log('Cuerpo de respuesta:', respText)
     if (!response.ok) {
       throw new Error('Error al crear la entrada')
     }
-    return await response.json()
+    return JSON.parse(respText)
   }
 
 
