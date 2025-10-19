@@ -6,9 +6,29 @@ import CustomBottomBar from '../../components/customBottomBar'
 import UserCard from '../../components/userCard'
 import { StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useEffect } from 'react'
+import { useUsuarios } from '../../hooks/useUsuarios'
 
 export default function Usuarios() {
   const router = useRouter()
+  const { usuarios, fetchUsuarios, loading, error } = useUsuarios()
+
+  useEffect(() => {
+    fetchUsuarios()
+  }, [])
+
+  const getRoleName = (permisoUsuario) => {
+    switch (permisoUsuario) {
+      case 1:
+        return 'Encargado general'
+      case 2:
+        return 'Encargado de almacen'
+      case 3:
+        return 'Encargado de cocina'
+      default:
+        return 'Desconocido'
+    }
+  }
 
   return (
     <SafeAreaProvider>
@@ -39,32 +59,33 @@ export default function Usuarios() {
               alignItems: 'center',
             }}
           >
-            <UserCard
-              name="Jorge Torres"
-              role="Encargado general"
-              onEdit={() => {}}
-              iconName="pencil"
-              iconColor={COLORS.primaryGreen}
-              bgColor={COLORS.primaryGreen15}
-            />
+            {loading && <Text>Cargando usuarios...</Text>}
+            {error && <Text style={{ color: 'red' }}>{error}</Text>}
 
-            <UserCard
-              name="María López"
-              role="Supervisora"
-              onEdit={() => {}}
-              iconName="pencil"
-              iconColor={COLORS.primaryGreen}
-              bgColor={COLORS.primaryGreen15}
-            />
-
-            <UserCard
-              name="Carlos Ramírez"
-              role="Administrador"
-              onEdit={() => {}}
-              iconName="pencil"
-              iconColor={COLORS.primaryGreen}
-              bgColor={COLORS.primaryGreen15}
-            />
+            {Array.isArray(usuarios) && usuarios.length > 0
+              ? usuarios.map((user) => (
+                  <UserCard
+                    key={user.idUsuario} // opcional pero recomendado
+                    name={`${user.nombreUsuario} ${user.apellidoPaterno} ${user.apellidoMaterno}`}
+                    role={getRoleName(user.permisoUsuario)}
+                    onEdit={() =>
+                      router.navigate({
+                        pathname: '/usuarios/editarUsuario',
+                        params: {
+                          idUsuario: user.idUsuario,
+                          nombreUsuario: user.nombreUsuario,
+                          apellidoPaterno: user.apellidoPaterno,
+                          apellidoMaterno: user.apellidoMaterno,
+                          permisoUsuario: user.permisoUsuario,
+                        },
+                      })
+                    }
+                    iconName="pencil"
+                    iconColor={COLORS.primaryGreen}
+                    bgColor={COLORS.primaryGreen15}
+                  />
+                ))
+              : !loading && <Text>No hay usuarios disponibles</Text>}
           </View>
         </View>
       </SafeAreaView>

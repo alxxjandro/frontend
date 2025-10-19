@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 import { globalStyles, COLORS } from '../../../styles/globalStyles'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import CustomIcon from '../../../components/customIcon'
 import CustomInput from '../../../components/customInput'
 import CustomButton from '../../../components/customButton'
@@ -16,16 +16,18 @@ import CustomDropdown from '../../../components/CustomDropdown'
 
 import { useUsuarios } from '../../../hooks/useUsuarios'
 
-export default function nuevoUsuario() {
+export default function EditUsuario() {
   const router = useRouter()
+  const params = useLocalSearchParams()
+  const { editUsuario, removeUsuario } = useUsuarios()
 
-  const { saveUsuario } = useUsuarios()
-
+  // Inicializamos estados solo una vez
+  const [newID] = useState(params.idUsuario || '')
+  const [newName, setNewName] = useState(params.nombreUsuario || '')
+  const [newAP, setNewAP] = useState(params.apellidoPaterno || '')
+  const [newAM, setNewAM] = useState(params.apellidoMaterno || '')
+  const [role, setRole] = useState('') // texto del rol
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newAP, setNewAP] = useState('')
-  const [newAM, setNewAM] = useState('')
-  const [role, setRole] = useState('')
 
   const mockRoles = [
     'Encargado de cocina',
@@ -39,25 +41,32 @@ export default function nuevoUsuario() {
     'Encargado de cocina': 3,
   }
 
-  const handleReturn = () => {
-    router.navigate('/usuarios')
-  }
+  // Si params.permisoUsuario viene, traducimos a texto
+  useEffect(() => {
+    if (params.permisoUsuario) {
+      const roleText = Object.keys(roleMapping).find(
+        (key) => roleMapping[key] === Number(params.permisoUsuario)
+      )
+      setRole(roleText || '')
+    }
+  }, [params.permisoUsuario])
 
-  const handleOutsidePress = () => {
-    Keyboard.dismiss()
-    setIsDropdownOpen(false)
-  }
+  const handleReturn = () => router.navigate('/usuarios')
+  const handleOutsidePress = () => Keyboard.dismiss()
 
-  const handleCreateUser = async () => {
+  const handleEditUser = async () => {
     const body = {
       nombreUsuario: newName,
       apellidoPaterno: newAP,
       apellidoMaterno: newAM,
       permisoUsuario: roleMapping[role] || 0,
-      password: 'Granjahogar',
     }
+    await editUsuario(newID, body)
+    router.navigate('/usuarios')
+  }
 
-    await saveUsuario(body)
+  const handleDeleteUser = async () => {
+    await removeUsuario(newID)
     router.navigate('/usuarios')
   }
 
@@ -67,7 +76,7 @@ export default function nuevoUsuario() {
         <TouchableWithoutFeedback onPress={handleOutsidePress}>
           <View style={globalStyles.body}>
             <View style={styles.container}>
-              <Text style={[globalStyles.h1, { flex: 1 }]}>Nuevo usuario</Text>
+              <Text style={[globalStyles.h1, { flex: 1 }]}>Editar usuario</Text>
               <CustomIcon
                 name="chevron-back"
                 size={48}
@@ -113,16 +122,16 @@ export default function nuevoUsuario() {
 
             <View style={styles.buttonContainer}>
               <CustomButton
-                title="Cancelar"
-                onPress={handleReturn}
-                outlined={true}
+                title="Borrar Usuario"
+                onPress={handleDeleteUser}
+                outlined
                 borderRadius={4}
-                backgroundColor={COLORS.primaryBlue}
-                textColor={COLORS.primaryBlue}
+                backgroundColor={COLORS.error}
+                textColor={COLORS.error}
               />
               <CustomButton
-                title="Crear Usuario"
-                onPress={handleCreateUser}
+                title="Editar Usuario"
+                onPress={handleEditUser}
                 borderRadius={4}
                 backgroundColor={COLORS.primaryBlue}
               />
