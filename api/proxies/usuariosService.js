@@ -27,10 +27,14 @@ const UsuariosServiceProxy = () => {
       headers: { 'Content-Type': 'application/json' },
     })
     if (!response.ok) {
-      if (response.status === 404) throw new Error('Entrada no encontrada')
-      throw new Error('Error al obtener la entrada')
+      if (response.status === 404) throw new Error('Usuario no encontrado')
+      throw new Error('Error al obtener el usuario')
     }
-    return await response.json()
+    const result = await response.json()
+    if (result.success && result.data) {
+      return result.data
+    }
+    return result
   }
 
   async function createUsuario(entradaData) {
@@ -39,7 +43,7 @@ const UsuariosServiceProxy = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entradaData),
     })
-    if (!response.ok) throw new Error('Error al crear la entrada')
+    if (!response.ok) throw new Error('Error al crear el usuario')
     return await response.json()
   }
 
@@ -49,7 +53,7 @@ const UsuariosServiceProxy = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(usuarioData),
     })
-    if (!response.ok) throw new Error('Error al actualizar la entrada')
+    if (!response.ok) throw new Error('Error al actualizar el usuario')
     return await response.json()
   }
 
@@ -58,7 +62,7 @@ const UsuariosServiceProxy = () => {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     })
-    if (!response.ok) throw new Error('Error al eliminar la entrada')
+    if (!response.ok) throw new Error('Error al eliminar el usuario')
     return await response.json()
   }
 

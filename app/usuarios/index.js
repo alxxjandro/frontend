@@ -17,14 +17,15 @@ export default function Usuarios() {
     fetchUsuarios()
   }, [])
 
+  // Role hierarchy: 3 = highest permissions, 1 = lowest
   const getRoleName = (permisoUsuario) => {
     switch (permisoUsuario) {
-      case 1:
-        return 'Encargado general'
-      case 2:
-        return 'Encargado de almacen'
       case 3:
-        return 'Encargado de cocina'
+        return 'Encargado general' // Highest permissions
+      case 2:
+        return 'Encargado de almacen' // Medium permissions
+      case 1:
+        return 'Encargado de cocina' // Lowest permissions
       default:
         return 'Desconocido'
     }

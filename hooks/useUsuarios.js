@@ -70,14 +70,12 @@ export function useUsuarios() {
     setError(null)
     try {
       const response = await updateUsuario(id, payload)
-      const producto = response.data || response
+      const usuario = response.data || response
       setUsuarios((prev) =>
-        prev.map((it) =>
-          it.idProducto === producto.idProducto ? producto : it
-        )
+        prev.map((it) => (it.idUsuario === id ? usuario : it))
       )
-      setSelected(producto)
-      return { success: true, data: producto }
+      setSelected(usuario)
+      return { success: true, data: usuario }
     } catch (err) {
       setError(err.message)
       return { success: false, message: err.message }
@@ -92,8 +90,8 @@ export function useUsuarios() {
     setError(null)
     try {
       await deleteUsuario(id)
-      setUsuarios((prev) => prev.filter((u) => u.id !== id))
-      if (selected?.id === id) setSelected(null)
+      setUsuarios((prev) => prev.filter((u) => u.idUsuario !== id))
+      if (selected?.idUsuario === id) setSelected(null)
       return { success: true }
     } catch (err) {
       setError(err.message)
