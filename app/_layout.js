@@ -47,6 +47,7 @@ export default function RootLayout() {
         headerShown: false,
         animation: 'fade',
         animationDuration: 150,
+        gestureEnabled: false,
       }}
     />
   )

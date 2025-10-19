@@ -13,11 +13,16 @@ export default function CustomDropdown({
   borderColor = COLORS.greyBorder,
   textColor = COLORS.blackText,
   textAlign = 'left',
+  disabled = false,
 }) {
   const handleSelect = (option) => {
     onSelect(option)
     setIsOpen(false)
   }
+
+  const currentBgColor = disabled ? COLORS.greyBorder : bgColor
+  const currentBorderColor = disabled ? COLORS.greyBorder : borderColor
+  const currentTextColor = disabled ? COLORS.greyText : textColor
 
   return (
     <View style={[styles.wrapper, { zIndex: isOpen ? 9999 : 1 }]}>
@@ -27,16 +32,21 @@ export default function CustomDropdown({
         style={[
           styles.input,
           {
-            borderColor,
-            backgroundColor: bgColor,
+            borderColor: currentBorderColor,
+            backgroundColor: currentBgColor,
           },
         ]}
         onPress={() => setIsOpen && setIsOpen(!isOpen)}
+        disabled={disabled}
       >
         <Text
           style={{
             flex: 1,
-            color: value ? textColor : COLORS.greyText,
+            color: disabled
+              ? COLORS.greyText
+              : value
+                ? textColor
+                : COLORS.greyText,
             fontFamily: FONTS.regular,
             fontSize: FONTS.size.md,
             textAlign,
@@ -48,7 +58,7 @@ export default function CustomDropdown({
         <Ionicons
           name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={20}
-          color={textColor}
+          color={currentTextColor}
           style={{ marginLeft: 8 }}
         />
       </Pressable>

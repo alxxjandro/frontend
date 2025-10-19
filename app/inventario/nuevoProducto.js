@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -13,28 +13,39 @@ import { COLORS, FONTS, globalStyles } from '../../styles/globalStyles'
 import ScreenHeader from '../../components/ScreenHeader'
 import CustomInput from '../../components/customInput'
 import CustomDropdown from '../../components/CustomDropdown'
-import QuantityToggle from '../../components/QuantityToggle'
 import ExpirationToggle from '../../components/ExpirationToggle'
 import CustomButton from '../../components/customButton'
 import ProductIconPicker from './Componentes/ProductIconPicker'
+import { useProducto } from '../../hooks/useProducto'
+import Spinner from '../../components/Spinner'
+import Toast from '../../components/Toast'
+import { useUnidades } from '../../hooks/useUnidades'
 
 export default function NuevoProducto() {
   const router = useRouter()
   const { mode, returnTo } = useLocalSearchParams()
+  const { categorias, loading, fetchCategorias, create } = useProducto()
+  const { unidades } = useUnidades()
 
+  // Estados
   const [selectedIcon, setSelectedIcon] = useState('🧻')
-  const [nombreProducto, setNombreProducto] = useState('Papel de baño')
-  const [categoria, setCategoria] = useState('Higiene personal')
+  const [nombreProducto, setNombreProducto] = useState('')
+  const [categoria, setCategoria] = useState('')
+  const [unidad, setUnidad] = useState('')
   const [hasExpirationDate, setHasExpirationDate] = useState(false)
   const [expirationDays, setExpirationDays] = useState(7)
   const [timeUnit, setTimeUnit] = useState('Días')
-  const [quantity, setQuantity] = useState(1)
-  const [unit, setUnit] = useState('Unidad')
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
+  const [isUnidadOpen, setIsUnidadOpen] = useState(false)
 
-  const categoryOptions = ['Comida', 'Higiene personal', 'Enlatados', 'Frutas']
   const timeUnitOptions = ['Días', 'Semanas', 'Meses']
-  const unitOptions = ['Unidad', 'Kg', 'Paquete', 'Litro', 'Gramos']
+
+  useEffect(() => {
+    fetchCategorias()
+  }, [])
+
+  const categoryOptions = categorias.map((cat) => cat.nombreDepartamento)
+  const unidadOptions = unidades?.map((u) => u.unidad) || []
 
   const handleGoBack = () => {
     if (mode === 'select' && returnTo) {
@@ -48,21 +59,53 @@ export default function NuevoProducto() {
   const handleOutsidePress = () => {
     Keyboard.dismiss()
     setIsCategoryOpen(false)
+    setIsUnidadOpen(false)
   }
 
-  const handleAddProduct = () => {
-    const newProduct = {
-      icon: selectedIcon,
-      name: nombreProducto,
-      category: categoria,
-      quantity,
-      unit,
-      hasExpirationDate,
-      expirationDays: hasExpirationDate ? expirationDays : null,
-      timeUnit: hasExpirationDate ? timeUnit : null,
+  const handleCreateProduct = async () => {
+    if (!nombreProducto.trim()) {
+      Toast.show('Por favor ingresa el nombre del producto', 'error')
+      return
     }
-    console.log('Producto agregado:', newProduct)
-    router.back()
+
+    if (!categoria) {
+      Toast.show('Por favor selecciona una categoría', 'error')
+      return
+    }
+
+    if (!unidad) {
+      Toast.show('Por favor selecciona una unidad', 'error')
+      return
+    }
+
+    const categoriaSeleccionada = categorias.find(
+      (cat) => cat.nombreDepartamento === categoria
+    )
+    const unidadSeleccionada = unidades.find((u) => u.unidad === unidad)
+
+    if (!categoriaSeleccionada || !unidadSeleccionada) {
+      Toast.show('Datos inválidos. Revisa las selecciones.', 'error')
+      return
+    }
+
+    const payload = {
+      nombreProducto: nombreProducto.trim(),
+      emoji: selectedIcon,
+      idDepartamento_departamento: categoriaSeleccionada.idDepartamento,
+      idUnidad_unidad: unidadSeleccionada.idUnidad,
+    }
+
+    try {
+      const result = await create(payload)
+      if (result.success) {
+        Toast.show('Producto creado correctamente', 'success')
+        setTimeout(() => router.back(), 1500)
+      } else {
+        Toast.show(result.message || 'Error al crear el producto', 'error')
+      }
+    } catch (error) {
+      Toast.show('Error al crear el producto', 'error')
+    }
   }
 
   return (
@@ -107,6 +150,15 @@ export default function NuevoProducto() {
                   isOpen={isCategoryOpen}
                   setIsOpen={setIsCategoryOpen}
                 />
+
+                <CustomDropdown
+                  label="Unidad"
+                  value={unidad}
+                  options={unidadOptions}
+                  onSelect={setUnidad}
+                  isOpen={isUnidadOpen}
+                  setIsOpen={setIsUnidadOpen}
+                />
               </View>
 
               <View style={{ marginTop: 10 }}>
@@ -120,33 +172,26 @@ export default function NuevoProducto() {
                   timeUnitOptions={timeUnitOptions}
                 />
               </View>
-
-              <View style={{ marginTop: 12 }}>
-                <QuantityToggle
-                  quantity={quantity}
-                  onQuantityChange={setQuantity}
-                  unit={unit}
-                  onUnitChange={setUnit}
-                  unitOptions={unitOptions}
-                />
-              </View>
             </ScrollView>
 
             <View style={styles.bottomContainer}>
               <CustomButton
-                title="Agregar a entrada"
+                title="Crear producto"
                 iconRight="add"
-                onPress={handleAddProduct}
+                onPress={handleCreateProduct}
                 backgroundColor={COLORS.primaryGreen}
                 textColor="#fff"
                 textSize={FONTS.size.sm}
                 borderRadius={8}
                 width={332}
                 height="52"
+                disabled={loading}
               />
             </View>
           </View>
         </TouchableWithoutFeedback>
+        <Spinner isVisible={loading} />
+        <Toast.Container />
       </SafeAreaView>
     </SafeAreaProvider>
   )
@@ -173,6 +218,7 @@ const styles = StyleSheet.create({
   dropdownWrapper: {
     marginTop: 10,
     zIndex: 10,
+    gap: 10,
   },
   bottomContainer: {
     position: 'absolute',

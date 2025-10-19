@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderWidth: 2,
     borderColor: COLORS.primaryBlue,
-    borderRadius: 4,
+    borderRadius: 40,
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -69,10 +69,19 @@ const styles = StyleSheet.create({
  * @param {Function} onClose - Callback to close the modal
  * @param {string} title - Modal title
  * @param {Array<string>} options - Array of filter options
+ * @param {string} selectedOption - Currently selected option (for single selection)
+ * @param {Function} onOptionSelect - Callback when an option is selected
  * @returns {JSX.Element} Filter modal component
  */
 
-export default function FilterModal({ visible, onClose, title, options }) {
+export default function FilterModal({
+  visible,
+  onClose,
+  title,
+  options,
+  selectedOption,
+  onOptionSelect,
+}) {
   const [selectedOptions, setSelectedOptions] = useState(
     options.reduce((acc, option) => {
       acc[option] = false
@@ -85,41 +94,86 @@ export default function FilterModal({ visible, onClose, title, options }) {
    * @param {string} option - Option to toggle
    */
   const toggleOption = (option) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [option]: !prev[option],
-    }))
+    if (selectedOption !== undefined) {
+      // Single selection mode (radio buttons)
+      onOptionSelect(option)
+    } else {
+      // Multiple selection mode (checkboxes)
+      setSelectedOptions((prev) => ({
+        ...prev,
+        [option]: !prev[option],
+      }))
+    }
   }
 
   /**
-   * Renders checkbox component
+   * Renders checkbox or radio visual
    * @param {boolean} isSelected - Whether option is selected
-   * @returns {JSX.Element} Checkbox component
+   * @returns {JSX.Element} Checkbox/Radio component
    */
-  const renderCheckbox = (isSelected) => (
-    <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-      {isSelected && (
-        <Ionicons name="checkmark" size={14} color={COLORS.whiteText} />
-      )}
-    </View>
-  )
+  const renderCheckbox = (isSelected) => {
+    const isRadio = selectedOption !== undefined
+
+    // Si es modo radio
+    if (isRadio) {
+      return (
+        <View
+          style={[
+            styles.checkbox,
+            {
+              borderWidth: isSelected ? 0 : 2,
+              backgroundColor: isSelected
+                ? COLORS.primaryBlue
+                : COLORS.whiteText,
+            },
+          ]}
+        >
+          {isSelected && (
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: COLORS.whiteText,
+              }}
+            />
+          )}
+        </View>
+      )
+    }
+
+    return (
+      <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+        {isSelected && (
+          <Ionicons name="checkmark" size={14} color={COLORS.whiteText} />
+        )}
+      </View>
+    )
+  }
 
   /**
-   * Renders individual option with checkbox
+   * Renders individual option with checkbox/radio
    * @param {string} option - Option text
    * @returns {JSX.Element} Option component
    */
-  const renderOption = (option) => (
-    <TouchableOpacity
-      key={option}
-      style={styles.optionContainer}
-      onPress={() => toggleOption(option)}
-      activeOpacity={0.7}
-    >
-      {renderCheckbox(selectedOptions[option])}
-      <Text style={styles.optionText}>{option}</Text>
-    </TouchableOpacity>
-  )
+  const renderOption = (option) => {
+    const isSelected =
+      selectedOption !== undefined
+        ? selectedOption === option
+        : selectedOptions[option]
+
+    return (
+      <TouchableOpacity
+        key={option}
+        style={styles.optionContainer}
+        onPress={() => toggleOption(option)}
+        activeOpacity={0.7}
+      >
+        {renderCheckbox(isSelected)}
+        <Text style={styles.optionText}>{option}</Text>
+      </TouchableOpacity>
+    )
+  }
 
   return (
     <Modal

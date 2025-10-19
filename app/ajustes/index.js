@@ -5,12 +5,13 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { globalStyles } from '../../styles/globalStyles'
 import CustomButton from '../../components/customButton'
 import CustomBottomBar from '../../components/customBottomBar'
-import { useRouter } from 'expo-router'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function Test() {
-  const name = 'Jorge Torres'
-
-  const router = useRouter()
+  const { user, logout } = useAuth()
+  const name =
+    user?.nombreUsuario.charAt(0).toUpperCase() +
+      user?.nombreUsuario.slice(1) || 'usuario'
 
   return (
     <SafeAreaProvider>
@@ -89,7 +90,7 @@ export default function Test() {
                 iconRight="chevron-forward"
                 expand="right"
                 width={332}
-                onPress={() => router.navigate('/login')}
+                onPress={logout}
               />
               <CustomButton
                 iconLeft="warning-outline"

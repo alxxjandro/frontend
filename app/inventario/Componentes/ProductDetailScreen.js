@@ -1,129 +1,129 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, ScrollView } from 'react-native'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+import { COLORS, FONTS, globalStyles } from '../../../styles/globalStyles'
+import ScreenHeader from '../../../components/ScreenHeader'
 import { useRouter } from 'expo-router'
-import { globalStyles, COLORS, FONTS } from '../../../styles/globalStyles'
-import ExtraButton from '../../../components/extraButton'
+
+export default function ProductDetailScreen({
+  productName,
+  emoji,
+  category,
+  quantity,
+  unit,
+  entries = [],
+}) {
+  const router = useRouter()
+
+  const formatDate = (fechaISO) => {
+    if (!fechaISO) return '—'
+    const fecha = new Date(fechaISO)
+    return fecha.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={globalStyles.body}>
+        <View style={[globalStyles.body, styles.container]}>
+          <ScreenHeader
+            paddingHorizontal={0}
+            title="Detalle de producto"
+            onBackPress={() => router.push('/inventario')}
+          />
+
+          <ScrollView
+            style={{ width: '100%' }}
+            contentContainerStyle={{ alignItems: 'center', paddingBottom: 40 }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.productInfo}>
+              <Text style={styles.emoji}>{emoji}</Text>
+              <Text style={globalStyles.h1}>{productName}</Text>
+              <Text style={styles.productDetails}>
+                {category} • {quantity} {unit}
+              </Text>
+            </View>
+
+            <View style={styles.entriesSection}>
+              <Text style={styles.sectionTitle}>Últimas entradas:</Text>
+
+              {entries && entries.length > 0 ? (
+                entries.map((entry, index) => (
+                  <View
+                    key={entry.idEntradaProducto || index}
+                    style={styles.entryCard}
+                  >
+                    <Text style={globalStyles.h3}>
+                      Entrada del {formatDate(entry.entrada?.fechaEntrada)}
+                    </Text>
+                    <Text style={styles.entryQuantity}>
+                      +{entry.cantidad} {unit}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyText}>
+                  Este producto aún no tiene entradas registradas.
+                </Text>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  )
+}
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+  container: {
+    width: 350,
+    alignSelf: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 10,
   },
   productInfo: {
     alignItems: 'center',
     marginVertical: 20,
   },
   emoji: {
-    fontSize: 50,
-    marginEnd: 8,
+    fontSize: 80,
+    marginBottom: 10,
   },
   productDetails: {
-    fontSize: 14,
+    fontFamily: FONTS.regular,
+    fontSize: FONTS.size.md,
+    color: COLORS.greyText,
     marginTop: 4,
   },
   entriesSection: {
     width: '100%',
-    paddingHorizontal: 25,
     marginTop: 10,
+    gap: 8,
   },
   sectionTitle: {
-    fontSize: FONTS.size.xl,
+    fontSize: FONTS.size.lg,
     fontFamily: FONTS.bold,
     color: COLORS.primaryBlue,
     marginBottom: 10,
   },
   entryCard: {
     backgroundColor: COLORS.cardBackgroundOne,
-    padding: 10,
-    borderRadius: 8,
-    marginVertical: 5,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   entryQuantity: {
-    fontSize: 14,
+    fontFamily: FONTS.regular,
+    fontSize: FONTS.size.sm,
+    color: COLORS.blackText,
     marginTop: 2,
   },
+  emptyText: {
+    textAlign: 'center',
+    color: COLORS.greyText,
+    marginTop: 10,
+  },
 })
-
-const SAMPLE_ENTRIES = [
-  { date: '8 de septiembre', quantity: '23 unidades' },
-  { date: '6 de septiembre', quantity: '18 unidades' },
-  { date: '5 de septiembre', quantity: '12 unidades' },
-]
-
-/**
- * Product Detail Screen - Shows detailed information about a specific product
- * @param {string} productName - Name of the product
- * @param {string} emoji - Product emoji icon
- * @param {string} category - Product category
- * @param {number} quantity - Product quantity
- * @param {string} unit - Unit of measurement
- * @param {Array} entries - Array of product entries
- * @returns {JSX.Element} Product detail screen component
- */
-
-export default function ProductDetailScreen({
-  productName,
-  emoji,
-  category = 'Categoria',
-  quantity,
-  unit = 'disponibles',
-  entries = SAMPLE_ENTRIES,
-}) {
-  const router = useRouter()
-
-  return (
-    <View
-      style={[
-        globalStyles.container,
-        {
-          flex: 1,
-          backgroundColor: COLORS.background,
-          justifyContent: 'flex-start',
-          paddingTop: 10,
-        },
-      ]}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={globalStyles.h1}>Detalle producto</Text>
-        <ExtraButton
-          icon="chevron-back"
-          color={COLORS.blackText}
-          style={styles.backButton}
-          size={30}
-          onPress={() => router.push('/inventario')}
-        />
-      </View>
-
-      {/* Product Info */}
-      <View style={styles.productInfo}>
-        <Text style={styles.emoji}>{emoji}</Text>
-        <Text style={globalStyles.h1}>{productName}</Text>
-        <Text style={styles.productDetails}>
-          {category} • {quantity} {unit}
-        </Text>
-      </View>
-
-      {/* Entries Section */}
-      <View style={styles.entriesSection}>
-        <Text style={styles.sectionTitle}>Últimas entradas:</Text>
-
-        {entries.map((entry, index) => (
-          <View key={index} style={styles.entryCard}>
-            <Text style={globalStyles.h3}>Entrada del {entry.date}</Text>
-            <Text style={styles.entryQuantity}>{entry.quantity}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  )
-}
