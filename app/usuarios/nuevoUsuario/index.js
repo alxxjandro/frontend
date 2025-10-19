@@ -26,17 +26,19 @@ export default function nuevoUsuario() {
   const [newAP, setNewAP] = useState('')
   const [newAM, setNewAM] = useState('')
   const [role, setRole] = useState('')
+  const [password, setPassword] = useState('')
 
+  // Role hierarchy: 3 = highest permissions, 1 = lowest
   const mockRoles = [
-    'Encargado de cocina',
-    'Encargado general',
-    'Encargado de almacen',
+    'Encargado general', // Highest permissions
+    'Encargado de almacen', // Medium permissions
+    'Encargado de cocina', // Lowest permissions
   ]
 
   const roleMapping = {
-    'Encargado general': 1,
-    'Encargado de almacen': 2,
-    'Encargado de cocina': 3,
+    'Encargado general': 3, // Highest permissions
+    'Encargado de almacen': 2, // Medium permissions
+    'Encargado de cocina': 1, // Lowest permissions
   }
 
   const handleReturn = () => {
@@ -49,12 +51,17 @@ export default function nuevoUsuario() {
   }
 
   const handleCreateUser = async () => {
+    if (!newName || !newAP || !newAM || !role || !password) {
+      alert('Por favor completa todos los campos obligatorios.')
+      return
+    }
+
     const body = {
       nombreUsuario: newName,
       apellidoPaterno: newAP,
       apellidoMaterno: newAM,
       permisoUsuario: roleMapping[role] || 0,
-      password: 'Granjahogar',
+      password: password,
     }
 
     await saveUsuario(body)
@@ -101,6 +108,13 @@ export default function nuevoUsuario() {
                 value={newAM}
                 onChangeText={setNewAM}
               />
+              <CustomInput
+                label="Contraseña"
+                placeholder="Ingresa la contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
               <CustomDropdown
                 label="Rol"
                 options={mockRoles}
@@ -110,7 +124,6 @@ export default function nuevoUsuario() {
                 setIsOpen={setIsDropdownOpen}
               />
             </View>
-
             <View style={styles.buttonContainer}>
               <CustomButton
                 title="Cancelar"

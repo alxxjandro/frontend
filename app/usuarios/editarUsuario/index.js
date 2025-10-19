@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native'
 import { globalStyles, COLORS } from '../../../styles/globalStyles'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
@@ -29,16 +30,17 @@ export default function EditUsuario() {
   const [role, setRole] = useState('') // texto del rol
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
+  // Role hierarchy: 3 = highest permissions, 1 = lowest
   const mockRoles = [
-    'Encargado de cocina',
-    'Encargado general',
-    'Encargado de almacen',
+    'Encargado general', // Highest permissions
+    'Encargado de almacen', // Medium permissions
+    'Encargado de cocina', // Lowest permissions
   ]
 
   const roleMapping = {
-    'Encargado general': 1,
-    'Encargado de almacen': 2,
-    'Encargado de cocina': 3,
+    'Encargado general': 3, // Highest permissions
+    'Encargado de almacen': 2, // Medium permissions
+    'Encargado de cocina': 1, // Lowest permissions
   }
 
   // Si params.permisoUsuario viene, traducimos a texto
@@ -55,6 +57,11 @@ export default function EditUsuario() {
   const handleOutsidePress = () => Keyboard.dismiss()
 
   const handleEditUser = async () => {
+    if (!newName || !newAP || !newAM || !role) {
+      alert('Por favor completa todos los campos obligatorios.')
+      return
+    }
+
     const body = {
       nombreUsuario: newName,
       apellidoPaterno: newAP,
@@ -66,8 +73,24 @@ export default function EditUsuario() {
   }
 
   const handleDeleteUser = async () => {
-    await removeUsuario(newID)
-    router.navigate('/usuarios')
+    Alert.alert(
+      'Confirmar eliminación',
+      '¿Estás seguro de que deseas eliminar este usuario? (se borraran todos sus datos, ejemplo: entradas, salidas y reportes)',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            await removeUsuario(newID)
+            router.navigate('/usuarios')
+          },
+        },
+      ]
+    )
   }
 
   return (
