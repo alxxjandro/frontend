@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -14,19 +14,66 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import CustomIcon from '../../components/customIcon'
 import CustomDropdown from '../../components/CustomDropdown'
 import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
-import { mockReports } from './data/mockData'
+import { useLogs } from '../../hooks/useLogs'
 
 export default function ReportesScreen() {
   const router = useRouter()
+  const { fetchLogsByYear, fetchReportesByDate, reportes, loading, error } = useLogs()
 
-  // Estados de filtros
   const [reportType, setReportType] = useState('Todos')
   const [sortOrder, setSortOrder] = useState('Más reciente')
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
+  const [reportCounts, setReportCounts] = useState({})
+  const [localError, setLocalError] = useState(null)
 
   const reportTypeOptions = ['Todos', 'Entradas', 'Salidas']
   const sortOptions = ['Más reciente', 'Más antiguo']
+
+  useEffect(() => {
+    fetchLogsByYear()
+  }, [])
+
+  useEffect(() => {
+    if (reportes && reportes.length > 0) {
+      fetchCounts()
+    }
+  }, [reportes])
+
+  const fetchCounts = async () => {
+    if (!reportes || reportes.length === 0) return
+
+    const counts = {}
+    const errors = []
+
+    for (const yearData of reportes) {
+      for (const month of yearData.months) {
+        try {
+          const numericMonth = parseInt(month)
+          if (isNaN(numericMonth)) continue 
+          const result = await fetchReportesByDate(yearData.year, numericMonth)
+
+          if (result?.success && Array.isArray(result.data)) {
+            counts[`${yearData.year}-${month}`] = result.data.length
+          } else {
+            counts[`${yearData.year}-${month}`] = 0
+            console.warn(`No se pudieron contar los reportes de ${month} ${yearData.year}`)
+          }
+        } catch (err) {
+          counts[`${yearData.year}-${month}`] = 0
+          errors.push(`${month} ${yearData.year}`)
+          console.error(`Error al obtener ${month} ${yearData.year}:`, err.message)
+        }
+      }
+    }
+
+    setReportCounts(counts)
+    if (errors.length > 0) {
+      setLocalError(`Algunos meses no se pudieron cargar correctamente: ${errors.join(', ')}`)
+    } else {
+      setLocalError(null)
+    }
+  }
 
   const handleOutsidePress = () => {
     Keyboard.dismiss()
@@ -34,63 +81,37 @@ export default function ReportesScreen() {
     setIsSortDropdownOpen(false)
   }
 
-  // Filtramos solo reportes mensuales
-  const reportsToShow = mockReports.filter((r) => r.type !== 'diario')
+  const groupedData = (reportes || []).map((item) => ({
+    title: item.year.toString(),
+    data: item.months.map((month) => ({
+      name: `Reportes de ${month}`,
+      year: item.year,
+      month,
+    })),
+  }))
 
-  const handleReportPress = (report) => {
-    if (report.type === 'mensual') {
-      const reportDate = new Date(report.date)
-      const group = `${reportDate.getFullYear()}-${String(
-        reportDate.getMonth() + 1
-      ).padStart(2, '0')}`
-      router.push(`/reportes/list/${group}`)
-    } else {
-      router.push(
-        `/reportes/${report.id}?name=${encodeURIComponent(report.name)}`
-      )
-    }
+  const handleReportPress = (item) => {
+    const group = `${item.year}-${item.month}`
+    router.push(`/reportes/list/${group}`)
   }
 
-  // Agrupar por año
-  const groupedData = reportsToShow.reduce((acc, report) => {
-    const year = new Date(report.date).getFullYear().toString()
-    const existingGroup = acc.find((g) => g.title === year)
-    if (existingGroup) existingGroup.data.push(report)
-    else acc.push({ title: year, data: [report] })
-    return acc
-  }, [])
-
-  const renderReportItem = ({ item, index }) => {
-    let dailyCount = 0
-    if (item.type === 'mensual') {
-      const d = new Date(item.date)
-      const y = d.getFullYear()
-      const m = d.getMonth()
-      dailyCount = mockReports.filter((r) => {
-        if (r.type !== 'diario') return false
-        const dr = new Date(r.date)
-        return dr.getFullYear() === y && dr.getMonth() === m
-      }).length
-    }
-
-    return (
-      <TouchableOpacity
-        onPress={() => handleReportPress(item)}
-        style={[
-          styles.reportCard,
-          index % 2 === 0 ? styles.cardVariant1 : styles.cardVariant2,
-        ]}
-      >
-        <View>
-          <Text style={styles.reportTitle}>{item.name}</Text>
-          {item.type === 'mensual' && (
-            <Text style={styles.reportCount}>{dailyCount} reportes</Text>
-          )}
-        </View>
-        <Text style={styles.arrowIcon}>›</Text>
-      </TouchableOpacity>
-    )
-  }
+  const renderReportItem = ({ item, index }) => (
+    <TouchableOpacity
+      onPress={() => handleReportPress(item)}
+      style={[
+        styles.reportCard,
+        index % 2 === 0 ? styles.cardVariant1 : styles.cardVariant2,
+      ]}
+    >
+      <View style={{ flexDirection: 'column' }}>
+        <Text style={styles.reportTitle}>{item.name}</Text>
+        <Text style={styles.reportCount}>
+          {reportCounts[`${item.year}-${item.month}`] ?? 0} reportes
+        </Text>
+      </View>
+      <Text style={styles.arrowIcon}>›</Text>
+    </TouchableOpacity>
+  )
 
   const renderSectionHeader = ({ section: { title } }) => (
     <Text style={styles.sectionHeader}>{title}</Text>
@@ -101,12 +122,12 @@ export default function ReportesScreen() {
       <SafeAreaView style={globalStyles.body}>
         <TouchableWithoutFeedback onPress={handleOutsidePress}>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            {/* HEADER (NO SCROLLEA) */}
+            {/* HEADER */}
             <View style={styles.headerContainer}>
               <View style={styles.header}>
                 <Text style={globalStyles.h1}>Reportes</Text>
                 <Text style={styles.countText}>
-                  ({reportsToShow.length} reportes)
+                  ({groupedData.length} años de reportes)
                 </Text>
               </View>
               <CustomIcon
@@ -155,25 +176,36 @@ export default function ReportesScreen() {
               />
             </View>
 
-            {/* LISTA SCROLLEABLE */}
+            {/* LISTA */}
             <ScrollView
               style={{ width: 332 }}
               contentContainerStyle={{ paddingBottom: 80 }}
               showsVerticalScrollIndicator={false}
             >
-              <SectionList
-                sections={groupedData}
-                keyExtractor={(item) => item.id}
-                renderItem={renderReportItem}
-                renderSectionHeader={renderSectionHeader}
-                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                scrollEnabled={false} // evita conflicto dentro del ScrollView
-                ListEmptyComponent={
-                  <Text style={styles.emptyText}>
-                    No hay reportes disponibles.
-                  </Text>
-                }
-              />
+              {loading ? (
+                <Text style={styles.emptyText}>Cargando reportes...</Text>
+              ) : (
+                <>
+                  {localError && (
+                    <Text style={{ color: 'orange', marginBottom: 10, textAlign: 'center' }}>
+                      ⚠️ {localError}
+                    </Text>
+                  )}
+                  <SectionList
+                    sections={groupedData}
+                    keyExtractor={(item, i) => String(i)}
+                    renderItem={renderReportItem}
+                    renderSectionHeader={renderSectionHeader}
+                    ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                    scrollEnabled={false}
+                    ListEmptyComponent={
+                      <Text style={styles.emptyText}>
+                        No hay reportes disponibles.
+                      </Text>
+                    }
+                  />
+                </>
+              )}
             </ScrollView>
           </View>
         </TouchableWithoutFeedback>
