@@ -6,65 +6,82 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import ScreenHeader from '../../components/ScreenHeader'
 import CustomButton from '../../components/customButton'
 import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
-import { mockReports } from './data/mockData'
-
-const REPORT_DATA = [
-  {
-    id: '1',
-    cantidad: '54',
-    producto: '🍎 Manzana',
-    categoria: 'Categoría 1',
-    fecha: '19/04/24',
-  },
-  {
-    id: '2',
-    cantidad: '45L',
-    producto: '🥛 Leche',
-    categoria: 'Categoría 2',
-    fecha: '11/04/25',
-  },
-  {
-    id: '3',
-    cantidad: '76',
-    producto: '🥚 Huevo',
-    categoria: 'Categoría 1',
-    fecha: '05/03/24',
-  },
-  {
-    id: '4',
-    cantidad: '12',
-    producto: '🍌 Plátano',
-    categoria: 'Categoría 1',
-    fecha: '21/04/24',
-  },
-]
+import { useLogs } from '../../hooks/useLogs'
+import { useEffect, useState } from 'react'
 
 export default function ReporteDetalleScreen() {
-  const { id, name } = useLocalSearchParams()
-  const report = mockReports.find((r) => r.id === id)
-  const cleanName = decodeURIComponent(name).replace(/^(<<|>>)\s*/, '')
+  const { id, name, year, month, day, tipo } = useLocalSearchParams()
+  const { fetchReportesByDetail } = useLogs()
+
+  const [reportData, setReportData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const cleanName = decodeURIComponent(name || '').replace(/^(<<|>>)\s*/, '')
+
+  // Cargar datos desde la base de datos
+  useEffect(() => {
+
+    const loadReportDetail = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const res = await fetchReportesByDetail(year, month, day, tipo)
+
+        let data = []
+
+        if (res?.success) {
+          if (Array.isArray(res.data)) {
+            data = res.data
+          } else if (Array.isArray(res?.data?.data)) {
+            data = res.data.data
+          }
+        }
+
+        setReportData(data)
+      } catch (err) {
+        console.error('❌ Error cargando detalle del reporte:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (year && month && day && tipo) {
+      loadReportDetail()
+    } else {
+      console.warn('⚠️ Faltan parámetros. No se llama a la BD.')
+    }
+  }, [year, month, day, tipo])
 
   const handleDownloadExcel = () => console.log('Descargar Excel')
   const handleDownloadPDF = () => console.log('Descargar PDF')
 
+  // Renderizado de filas 
   const renderTableRow = ({ item, index }) => (
     <View style={[styles.tableRow, index % 2 !== 0 && styles.tableRowAlt]}>
       <Text style={[styles.tableCell, styles.colCantidad]}>
-        {item.cantidad}
+        {item.cantidad ?? '-'}
       </Text>
       <Text style={[styles.tableCell, styles.colProducto]}>
-        {item.producto}
+        {item.producto || '-'}
       </Text>
       <Text style={[styles.tableCell, styles.colCategoria]}>
-        {item.categoria}
+        {item.categoria || '-'}
       </Text>
-      <Text style={[styles.tableCell, styles.colFecha]}>{item.fecha}</Text>
+      <Text style={[styles.tableCell, styles.colFecha]}>
+        {item.fechaEntrada
+          ? new Date(item.fechaEntrada).toLocaleDateString('es-MX')
+          : '-'}
+      </Text>
     </View>
   )
 
@@ -75,13 +92,13 @@ export default function ReporteDetalleScreen() {
           <View style={styles.container}>
             {/* Header */}
             <ScreenHeader
-              title={cleanName}
-              subtitle="Realizada por Persona"
+              title={cleanName || 'Detalle del reporte'}   
+              subtitle={`Realizado por ...`}
               showBackButton
               paddingHorizontal={0}
             />
 
-            {/* Scrollable content */}
+            {/* Contenido Scrollable */}
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
@@ -103,22 +120,35 @@ export default function ReporteDetalleScreen() {
                     Categoría
                   </Text>
                   <Text style={[styles.tableHeaderCell, styles.colFecha]}>
-                    Fecha Entrada
+                    Fecha entrada
                   </Text>
                 </View>
 
-                {/* Filas */}
-                <FlatList
-                  data={REPORT_DATA}
-                  renderItem={renderTableRow}
-                  keyExtractor={(item) => item.id}
-                  scrollEnabled={false}
-                  ListEmptyComponent={
-                    <Text style={styles.emptyText}>
-                      No hay datos disponibles.
-                    </Text>
-                  }
-                />
+                {/* Estado de carga */}
+                {loading ? (
+                  <ActivityIndicator
+                    size="large"
+                    color={COLORS.primaryBlue}
+                    style={{ marginVertical: 20 }}
+                  />
+                ) : error ? (
+                  <Text style={[styles.emptyText, { color: 'red' }]}>
+                    {error}
+                  </Text>
+                ) : reportData.length === 0 ? (
+                  <Text style={styles.emptyText}>
+                    No hay datos disponibles para este reporte.
+                  </Text>
+                ) : (
+                  <FlatList
+                    data={reportData}
+                    renderItem={renderTableRow}
+                    keyExtractor={(item, index) =>
+                      `${item.producto || 'item'}-${index}`
+                    }
+                    scrollEnabled={false}
+                  />
+                )}
               </View>
 
               {/* Botones */}
@@ -183,19 +213,11 @@ const styles = StyleSheet.create({
     color: COLORS.blackText,
   },
 
-  // 🔹 Proporciones de columnas
-  colCantidad: {
-    flex: 0.7, // más angosta
-  },
-  colProducto: {
-    flex: 1.3, // más espacio para texto + emoji
-  },
-  colCategoria: {
-    flex: 1,
-  },
-  colFecha: {
-    flex: 1,
-  },
+  // 🔹 Nuevas columnas
+  colCantidad: { flex: 1 },
+  colProducto: { flex: 2 },
+  colCategoria: { flex: 1.5 },
+  colFecha: { flex: 1.5 },
 
   buttonsContainer: {
     flexDirection: 'row',
