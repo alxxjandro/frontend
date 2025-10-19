@@ -2,7 +2,6 @@
 import { API_BASE_URL } from '@env'
 
 const EntradasServiceProxy = () => {
-
   async function getAllEntradas() {
     const response = await fetch(`${API_BASE_URL}/entradas`, {
       method: 'GET',
@@ -31,7 +30,6 @@ const EntradasServiceProxy = () => {
   }
 
   async function createEntrada(entradaData) {
-    console.log('Payload enviado:', entradaData)
     const response = await fetch(`${API_BASE_URL}/entradas`, {
       method: 'POST',
       headers: {
@@ -39,18 +37,14 @@ const EntradasServiceProxy = () => {
       },
       body: JSON.stringify(entradaData),
     })
-    console.log('Status de respuesta:', response.status) // Verifica el código HTTP
     const respText = await response.text()
-    console.log('Cuerpo de respuesta:', respText)
     if (!response.ok) {
       throw new Error('Error al crear la entrada')
     }
     return JSON.parse(respText)
   }
 
-
-
-  return { getAllEntradas, getEntradaById, createEntrada  }
+  return { getAllEntradas, getEntradaById, createEntrada }
 }
 
 export default EntradasServiceProxy

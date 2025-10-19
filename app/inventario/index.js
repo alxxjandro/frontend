@@ -8,16 +8,18 @@ import FilterModal from './Componentes/FilterModal'
 import { globalStyles, COLORS } from '../../styles/globalStyles'
 import { useInventario } from '../../hooks/useInventario'
 import { useProducto } from '../../hooks/useProducto'
+import Spinner from '../../components/Spinner'
 
 export default function InventarioScreen() {
   const router = useRouter()
-  const { mode = 'view'} = useLocalSearchParams()
+  const { mode = 'view' } = useLocalSearchParams()
   const params = useLocalSearchParams() || {}
   const returnTo = params.returnTo || null
   const { inventario, fetchAll } = useInventario()
   const {
     productos,
     categorias,
+    loading,
     fetchAll: fetchProductos,
     fetchCategorias,
   } = useProducto()
@@ -67,7 +69,7 @@ export default function InventarioScreen() {
           productName: product.name,
           productEmoji: product.emoji,
           productCategory: product.category,
-          idUnidad: product.idUnidad,
+          idUnidad: product.idUnidad_unidad,
           returnTo,
         },
       })
@@ -96,42 +98,50 @@ export default function InventarioScreen() {
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={globalStyles.body}>
-        <View style={styles.container}>
-          <ScrollView
-            style={styles.scrollContainer}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <ScreenHeader
-              title="Inventario"
-              subtitle={`(${inventario.length} productos)`}
-              onBackPress={handleBackToHome}
-            />
+    <>
+      <SafeAreaProvider>
+        <SafeAreaView style={globalStyles.body}>
+          <View style={styles.container}>
+            <ScrollView
+              style={styles.scrollContainer}
+              contentContainerStyle={{
+                ...styles.scrollContent,
+                width: 380,
+                alignSelf: 'center',
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              <ScreenHeader
+                title="Inventario"
+                subtitle={`(${inventario.length} productos)`}
+                onBackPress={handleBackToHome}
+              />
 
-            <InventarioContent
-              inventario={inventario}
-              productos={productos}
-              onProductPress={handleProductPress}
-              onFilterPress={toggleModal}
-              mode={mode}
-              returnTo={returnTo}
-            />
-          </ScrollView>
+              <InventarioContent
+                inventario={inventario}
+                productos={productos}
+                onProductPress={handleProductPress}
+                onFilterPress={toggleModal}
+                mode={mode}
+                returnTo={returnTo}
+                loading={loading}
+              />
+            </ScrollView>
 
-          {Object.entries(MODAL_CONFIGS).map(([modalKey, config]) => (
-            <FilterModal
-              key={modalKey}
-              visible={modalStates[modalKey]}
-              onClose={() => toggleModal(modalKey)}
-              title={config.title}
-              options={config.options}
-            />
-          ))}
-        </View>
-      </SafeAreaView>
-    </SafeAreaProvider>
+            {Object.entries(MODAL_CONFIGS).map(([modalKey, config]) => (
+              <FilterModal
+                key={modalKey}
+                visible={modalStates[modalKey]}
+                onClose={() => toggleModal(modalKey)}
+                title={config.title}
+                options={config.options}
+              />
+            ))}
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
+      <Spinner isVisible={loading} />
+    </>
   )
 }
 

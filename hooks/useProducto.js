@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useState } from 'react'
 import ProductoServiceProxy from '../api/proxies/productoService'
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -15,47 +15,49 @@ export default function CustomDatePicker({
   onDateSelect,
   onToggle,
   onCancel,
+  date,
 }) {
-  const [selected, setSelected] = useState('')
+  const [internalDate, setInternalDate] = useState('')
+
+  useEffect(() => {
+    if (date) setInternalDate(date)
+  }, [date])
 
   const handleDayPress = (day) => {
-    setSelected(day.dateString)
-    onDateSelect(day.dateString)
+    setInternalDate(day.dateString)
+    onDateSelect?.(day.dateString)
   }
+
+  const displayedDate = date || internalDate
 
   return (
     <View style={styles.wrapper}>
       {label && <Text style={styles.label}>{label}</Text>}
 
-      {/* Campo de selección */}
       <Pressable style={styles.input} onPress={onToggle}>
         <Text
           style={[
             styles.dateText,
-            { color: selected ? COLORS.blackText : COLORS.greyText },
+            { color: displayedDate ? COLORS.blackText : COLORS.greyText },
           ]}
         >
-          {selected || 'Seleccionar fecha'}
+          {displayedDate || 'Seleccionar fecha'}
         </Text>
       </Pressable>
 
-      {/* Calendario y backdrop */}
       {isVisible && (
-        // style={styles.overlay}
-        <View  style={[styles.overlay, { backgroundColor: 'red', borderWidth: 2, borderStyle: 'solid' }]}> 
-          {/* Backdrop clickeable */}
+        <View style={[styles.overlay, { borderStyle: 'solid' }]}>
           <TouchableWithoutFeedback onPress={onCancel}>
             <View style={styles.backdrop} />
           </TouchableWithoutFeedback>
 
-          {/* Calendario */}
           <View style={styles.calendarContainer}>
             <Calendar
               onDayPress={handleDayPress}
               markedDates={
-                selected
+                displayedDate
                   ? {
-                      [selected]: {
+                      [displayedDate]: {
                         selected: true,
                         selectedColor: COLORS.primaryBlue,
                       },
@@ -119,7 +121,6 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 10,
   },
-
 
   /* --- Contenedor del calendario --- */
   calendarContainer: {

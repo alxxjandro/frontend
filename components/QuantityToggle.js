@@ -20,7 +20,7 @@ export default function QuantityToggle({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.subLabel}>Cantidad</Text>
+      <Text style={styles.subLabel}>Cantida</Text>
 
       <View style={styles.controlsRow}>
         {/* Contador numérico */}
