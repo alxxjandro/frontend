@@ -43,36 +43,46 @@ export default function ReportesScreen() {
   const fetchCounts = async () => {
     if (!reportes || reportes.length === 0) return
 
-    const counts = {}
-    const errors = []
+    // ✅ OPTIMIZATION: Fetch all counts in parallel
+    const promises = []
+    const keys = []
 
     for (const yearData of reportes) {
       for (const month of yearData.months) {
-        try {
-          const numericMonth = parseInt(month)
-          if (isNaN(numericMonth)) continue 
-          const result = await fetchReportesByDate(yearData.year, numericMonth)
-
-          if (result?.success && Array.isArray(result.data)) {
-            counts[`${yearData.year}-${month}`] = result.data.length
-          } else {
-            counts[`${yearData.year}-${month}`] = 0
-            console.warn(`No se pudieron contar los reportes de ${month} ${yearData.year}`)
-          }
-        } catch (err) {
-          counts[`${yearData.year}-${month}`] = 0
-          errors.push(`${month} ${yearData.year}`)
-          console.error(`Error al obtener ${month} ${yearData.year}:`, err.message)
-        }
+        const numericMonth = parseInt(month)
+        if (isNaN(numericMonth)) continue
+        
+        const key = `${yearData.year}-${month}`
+        keys.push(key)
+        promises.push(
+          fetchReportesByDate(yearData.year, numericMonth)
+            .catch(err => {
+              console.error(`Error fetching ${key}:`, err.message)
+              return { success: false, error: err.message }
+            })
+        )
       }
     }
 
+    // Execute all API calls in parallel
+    const results = await Promise.all(promises)
+
+    // Process results
+    const counts = {}
+    results.forEach((result, index) => {
+      const key = keys[index]
+      
+      // Support backend count field (optimized) or count array (fallback)
+      if (result?.success && typeof result.count === 'number') {
+        counts[key] = result.count
+      } else if (result?.success && Array.isArray(result.data)) {
+        counts[key] = result.data.length
+      } else {
+        counts[key] = 0
+      }
+    })
+
     setReportCounts(counts)
-    if (errors.length > 0) {
-      setLocalError(`Algunos meses no se pudieron cargar correctamente: ${errors.join(', ')}`)
-    } else {
-      setLocalError(null)
-    }
   }
 
   const handleOutsidePress = () => {

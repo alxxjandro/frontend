@@ -18,7 +18,9 @@ const LogsServiceProxy = () => {
   }
 
   async function getReporteByDate(year, month) {
-    const response = await fetch(`${API_BASE_URL}/reportes/${year}/${month}`, {
+    const url = `${API_BASE_URL}/reportes/${year}/${month}`
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -34,13 +36,15 @@ const LogsServiceProxy = () => {
   }
 
   async function getReporteByDetail(year, month, day, tipo) {
-    const response = await fetch(`${API_BASE_URL}/reportes/${year}/${month}/${day}/${tipo}`, {
+    const url = `${API_BASE_URL}/reportes/${year}/${month}/${day}/${tipo}`
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     })
-
+    
     if (!response.ok) {
       if (response.status === 404) throw new Error('Reporte no encontrado')
       throw new Error('Error al obtener el reporte')
