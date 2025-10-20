@@ -23,6 +23,7 @@ export default function ReporteDetalleScreen() {
   const [reportData, setReportData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [userName, setUserName] = useState('Desconocido')
 
   const cleanName = decodeURIComponent(name || '').replace(/^(<<|>>)\s*/, '')
 
@@ -37,18 +38,42 @@ export default function ReporteDetalleScreen() {
         const res = await fetchReportesByDetail(year, month, day, tipo)
 
         let data = []
+        let usuario = null
 
         if (res?.success) {
+          // Backend returns { success: true, data: [...] } with flat structure
           if (Array.isArray(res.data)) {
             data = res.data
-          } else if (Array.isArray(res?.data?.data)) {
-            data = res.data.data
+            
+            // Try to get usuario from different possible locations
+            usuario = res.usuario || // Top level
+                     res.data[0]?.usuario || // First item
+                     res.data[0]?.entrada?.usuario // Nested in entrada
+          } else if (res.data?.productos && Array.isArray(res.data.productos)) {
+            data = res.data.productos
+            usuario = res.data.usuario || res.usuario
+          } else if (typeof res.data === 'object' && res.data !== null) {
+            // If data is a single object, wrap it in array
+            data = [res.data]
+            usuario = res.data.usuario || res.usuario
+          } else {
+            console.warn('⚠️ [ReportDetail] Unknown data structure:', res.data)
           }
+        } else {
+          console.error('❌ [ReportDetail] Response not successful:', res)
         }
 
         setReportData(data)
+        
+        // Set user name for subtitle
+        if (usuario) {
+          const fullName = `${usuario.nombreUsuario || ''} ${usuario.apellidoPaterno || ''}`.trim()
+          setUserName(fullName || 'Desconocido')
+        } else {
+          setUserName('Desconocido')
+        }
       } catch (err) {
-        console.error('❌ Error cargando detalle del reporte:', err)
+        console.error('❌ [ReportDetail] Error cargando detalle del reporte:', err)
         setError(err.message)
       } finally {
         setLoading(false)
@@ -66,24 +91,52 @@ export default function ReporteDetalleScreen() {
   const handleDownloadPDF = () => console.log('Descargar PDF')
 
   // Renderizado de filas 
-  const renderTableRow = ({ item, index }) => (
-    <View style={[styles.tableRow, index % 2 !== 0 && styles.tableRowAlt]}>
-      <Text style={[styles.tableCell, styles.colCantidad]}>
-        {item.cantidad ?? '-'}
-      </Text>
-      <Text style={[styles.tableCell, styles.colProducto]}>
-        {item.producto || '-'}
-      </Text>
-      <Text style={[styles.tableCell, styles.colCategoria]}>
-        {item.categoria || '-'}
-      </Text>
-      <Text style={[styles.tableCell, styles.colFecha]}>
-        {item.fechaEntrada
-          ? new Date(item.fechaEntrada).toLocaleDateString('es-MX')
-          : '-'}
-      </Text>
-    </View>
-  )
+  const renderTableRow = ({ item, index }) => {
+    // Handle flat structure from backend
+    // Backend returns: { cantidad, producto, categoria, fechaEntrada }
+    const cantidad = item.cantidad ?? item.entradaProducto?.cantidad ?? '-'
+    
+    // For flat structure: producto is a string
+    // For nested structure: producto.nombreProducto
+    const nombreProducto = typeof item.producto === 'string' 
+      ? item.producto 
+      : (item.producto?.nombreProducto || item.entradaProducto?.producto?.nombreProducto || '-')
+    
+    // For flat structure: categoria is a string
+    // For nested structure: producto.departamento.nombreDepartamento
+    const nombreDepartamento = typeof item.categoria === 'string'
+      ? item.categoria
+      : (item.producto?.departamento?.nombreDepartamento || 
+         item.entradaProducto?.producto?.departamento?.nombreDepartamento || 
+         item.categoria || '-')
+    
+    // Unit might be in item.unidad or nested
+    const unidad = item.unidad?.unidad || item.entradaProducto?.unidad?.unidad || item.unidad || ''
+    
+    // For reports, the date should be the report date itself (when the entrada/salida was created)
+    // Not the expiration date or any other date
+    const fecha = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`
+
+    // Format quantity with unit
+    const cantidadConUnidad = unidad ? `${cantidad} ${unidad}` : cantidad
+
+    return (
+      <View style={[styles.tableRow, index % 2 !== 0 && styles.tableRowAlt]}>
+        <Text style={[styles.tableCell, styles.colCantidad]}>
+          {cantidadConUnidad}
+        </Text>
+        <Text style={[styles.tableCell, styles.colProducto]}>
+          {nombreProducto}
+        </Text>
+        <Text style={[styles.tableCell, styles.colCategoria]}>
+          {nombreDepartamento}
+        </Text>
+        <Text style={[styles.tableCell, styles.colFecha]}>
+          {fecha}
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaProvider>
@@ -93,7 +146,7 @@ export default function ReporteDetalleScreen() {
             {/* Header */}
             <ScreenHeader
               title={cleanName || 'Detalle del reporte'}   
-              subtitle={`Realizado por ...`}
+              subtitle={`Realizado por ${userName}`}
               showBackButton
               paddingHorizontal={0}
             />
@@ -120,7 +173,7 @@ export default function ReporteDetalleScreen() {
                     Categoría
                   </Text>
                   <Text style={[styles.tableHeaderCell, styles.colFecha]}>
-                    Fecha entrada
+                    {tipo === 'entrada' ? 'Fecha entrada' : 'Fecha salida'}
                   </Text>
                 </View>
 

@@ -89,6 +89,8 @@ export default function Group() {
       }
 
       const res = await fetchReportesByDate(year, monthNumber)
+      
+      console.log('📅 [Group] fetchReportesByDate response:', res)
 
       let fetchedReports = []
 
@@ -101,6 +103,8 @@ export default function Group() {
           fetchedReports = res.data.data
         }
       }
+
+      console.log('📅 [Group] fetchedReports:', fetchedReports)
 
       // Si no hay datos válidos, error controlado
       if (!Array.isArray(fetchedReports) || fetchedReports.length === 0) {
@@ -142,7 +146,8 @@ export default function Group() {
 
     filteredReports.forEach((r) => {
       const date = new Date(r.fecha)
-      const day = date.getDate()
+      // ✅ Use UTC to match the navigation logic
+      const day = date.getUTCDate()
 
       if (!map[day]) map[day] = []
       map[day].push(r)
@@ -159,9 +164,17 @@ export default function Group() {
 
 const handleReportPress = (report) => {
   const fecha = new Date(report.fecha)
-  const year = fecha.getFullYear()
-  const month = fecha.getMonth() + 1
-  const day = fecha.getDate()
+  
+  // Use UTC methods to avoid timezone issues
+  const year = fecha.getUTCFullYear()
+  const month = fecha.getUTCMonth() + 1
+  const day = fecha.getUTCDate()
+  
+  console.log('🔍 [Group] Report clicked:', {
+    reportFecha: report.fecha,
+    extractedDate: { year, month, day },
+    tipo: report.tipo
+  })
 
   router.push({
     pathname: '/reportes/detalle',
