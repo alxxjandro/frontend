@@ -18,7 +18,8 @@ import { useLogs } from '../../hooks/useLogs'
 
 export default function ReportesScreen() {
   const router = useRouter()
-  const { fetchLogsByYear, fetchReportesByDate, reportes, loading, error } = useLogs()
+  const { fetchLogsByYear, fetchReportesByDate, reportes, loading, error } =
+    useLogs()
 
   const [reportType, setReportType] = useState('Todos')
   const [sortOrder, setSortOrder] = useState('Más reciente')
@@ -51,15 +52,14 @@ export default function ReportesScreen() {
       for (const month of yearData.months) {
         const numericMonth = parseInt(month)
         if (isNaN(numericMonth)) continue
-        
+
         const key = `${yearData.year}-${month}`
         keys.push(key)
         promises.push(
-          fetchReportesByDate(yearData.year, numericMonth)
-            .catch(err => {
-              console.error(`Error fetching ${key}:`, err.message)
-              return { success: false, error: err.message }
-            })
+          fetchReportesByDate(yearData.year, numericMonth).catch((err) => {
+            console.error(`Error fetching ${key}:`, err.message)
+            return { success: false, error: err.message }
+          })
         )
       }
     }
@@ -71,7 +71,7 @@ export default function ReportesScreen() {
     const counts = {}
     results.forEach((result, index) => {
       const key = keys[index]
-      
+
       // Support backend count field (optimized) or count array (fallback)
       if (result?.success && typeof result.count === 'number') {
         counts[key] = result.count
@@ -197,7 +197,13 @@ export default function ReportesScreen() {
               ) : (
                 <>
                   {localError && (
-                    <Text style={{ color: 'orange', marginBottom: 10, textAlign: 'center' }}>
+                    <Text
+                      style={{
+                        color: 'orange',
+                        marginBottom: 10,
+                        textAlign: 'center',
+                      }}
+                    >
                       ⚠️ {localError}
                     </Text>
                   )}
@@ -206,7 +212,9 @@ export default function ReportesScreen() {
                     keyExtractor={(item, i) => String(i)}
                     renderItem={renderReportItem}
                     renderSectionHeader={renderSectionHeader}
-                    ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                    ItemSeparatorComponent={() => (
+                      <View style={{ height: 8 }} />
+                    )}
                     scrollEnabled={false}
                     ListEmptyComponent={
                       <Text style={styles.emptyText}>
