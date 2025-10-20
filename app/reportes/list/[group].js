@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import CustomIcon from '../../../components/customIcon'
 import CustomDropdown from '../../../components/CustomDropdown'
 import { globalStyles, COLORS, FONTS } from '../../../styles/globalStyles'
-import { mockReports } from '../data/mockData'
+import { useLogs } from '../../../hooks/useLogs'
 
 // Meses en español
 const MONTH_NAMES = [
@@ -31,11 +31,30 @@ const MONTH_NAMES = [
   'Diciembre',
 ]
 
+const MONTH_TO_NUMBER = {
+  enero: 1,
+  febrero: 2,
+  marzo: 3,
+  abril: 4,
+  mayo: 5,
+  junio: 6,
+  julio: 7,
+  agosto: 8,
+  septiembre: 9,
+  octubre: 10,
+  noviembre: 11,
+  diciembre: 12,
+}
+
 export default function Group() {
   const router = useRouter()
-  const { group } = useLocalSearchParams() // ej: "2023-01"
+  const { group } = useLocalSearchParams() 
+  const { fetchReportesByDate } = useLogs()
 
-  // Estados de los filtros
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
   const [reportType, setReportType] = useState('Todos')
   const [sortOrder, setSortOrder] = useState('Más reciente')
   const [isTypeOpen, setIsTypeOpen] = useState(false)
@@ -44,29 +63,87 @@ export default function Group() {
   const reportTypeOptions = ['Todos', 'Entrada', 'Salida']
   const sortOptions = ['Más reciente', 'Más antiguo']
 
-  const [year, month] = group ? group.split('-') : []
-  const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
+  // Extraer año y mes desde "group"
+  const [year, rawMonth] = group ? group.split('-') : []
 
-  // Filtrar reportes diarios del mes
+  // Mostrar nombre legible del mes
+  const monthName =
+    MONTH_NAMES.find((m) => m.toLowerCase() === rawMonth?.toLowerCase()) ||
+    rawMonth
+
+  // Cargar reportes desde el backend
+  useEffect(() => {
+  const loadReports = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Normalizamos el mes
+      let monthNumber = parseInt(rawMonth)
+      if (isNaN(monthNumber)) {
+        monthNumber = MONTH_TO_NUMBER[rawMonth?.toLowerCase()?.trim()]
+      }
+
+      if (!monthNumber) {
+        throw new Error(`Mes inválido o no reconocido: ${rawMonth}`)
+      }
+
+      const res = await fetchReportesByDate(year, monthNumber)
+
+      let fetchedReports = []
+
+      if (res?.success) {
+        if (Array.isArray(res.data)) {
+          fetchedReports = res.data
+        } else if (Array.isArray(res?.data?.reportes)) {
+          fetchedReports = res.data.reportes
+        } else if (Array.isArray(res?.data?.data)) {
+          fetchedReports = res.data.data
+        }
+      }
+
+      // Si no hay datos válidos, error controlado
+      if (!Array.isArray(fetchedReports) || fetchedReports.length === 0) {
+        console.warn('No se encontraron reportes válidos en la respuesta.')
+      }
+
+      setReports(
+        fetchedReports.map(r => ({
+          ...r,
+          tipo: r.tipo?.toLowerCase() || 'desconocido'
+        }))
+      )
+
+    } catch (err) {
+      console.error('Error cargando reportes:', err)
+      setReports([])
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (year && rawMonth) {
+    loadReports()
+  }
+}, [year, rawMonth])
+
+  // Filtrar reportes por tipo
   const filteredReports = useMemo(() => {
-    if (!group) return []
-    return mockReports.filter((r) => {
-      if (r.type !== 'diario') return false
-      const d = new Date(r.date)
-      const sameMonth =
-        d.getFullYear().toString() === year &&
-        String(d.getMonth() + 1).padStart(2, '0') === month
-      const matchesType =
-        reportType === 'Todos' || r.subtype === reportType.toLowerCase()
-      return sameMonth && matchesType
-    })
-  }, [group, reportType])
+    if (reportType === 'Todos') return reports
+    return reports.filter(
+      (r) => r.tipo?.toLowerCase() === reportType.toLowerCase()
+    )
+  }, [reports, reportType])
 
-  // Agrupar por día
+  // Agrupar reportes por día
   const groupedReports = useMemo(() => {
     const map = {}
+
     filteredReports.forEach((r) => {
-      const day = new Date(r.date).getDate()
+      const date = new Date(r.fecha)
+      const day = date.getDate()
+
       if (!map[day]) map[day] = []
       map[day].push(r)
     })
@@ -80,11 +157,24 @@ export default function Group() {
     return sortedDays
   }, [filteredReports, sortOrder])
 
-  const handleReportPress = (report) => {
-    router.push(
-      `/reportes/${report.id}?name=${encodeURIComponent(report.name)}`
-    )
-  }
+const handleReportPress = (report) => {
+  const fecha = new Date(report.fecha)
+  const year = fecha.getFullYear()
+  const month = fecha.getMonth() + 1
+  const day = fecha.getDate()
+
+  router.push({
+    pathname: '/reportes/detalle',
+    params: {
+      id: report.id,
+      name: report.titulo,
+      year,
+      month,
+      day,
+      tipo: report.tipo, 
+    },
+  })
+}
 
   const handleOutsidePress = () => {
     Keyboard.dismiss()
@@ -96,9 +186,8 @@ export default function Group() {
     <SafeAreaView style={globalStyles.body}>
       <TouchableWithoutFeedback onPress={handleOutsidePress}>
         <View style={{ flex: 1 }}>
-          {/* HEADER + FILTROS (NO SCROLLEAN) */}
+          {/* HEADER + FILTROS */}
           <View style={{ alignItems: 'center' }}>
-            {/* Header */}
             <View style={styles.headerContainer}>
               <View style={styles.header}>
                 <Text style={globalStyles.h1}>
@@ -117,7 +206,6 @@ export default function Group() {
               />
             </View>
 
-            {/* Filtros */}
             <View style={styles.filterContainer}>
               <CustomDropdown
                 label="Tipo de reporte"
@@ -164,48 +252,52 @@ export default function Group() {
             }}
             showsVerticalScrollIndicator={false}
           >
-            {groupedReports.map(({ day, reports }) => (
-              <View key={day} style={styles.daySection}>
-                <Text style={styles.sectionHeader}>
-                  {day} de {monthName} del {year}
-                </Text>
-
-                {reports.map((r, index) => (
-                  <TouchableOpacity
-                    key={r.id}
-                    style={[
-                      styles.reportCard,
-                      index % 2 === 0
-                        ? styles.cardVariant1
-                        : styles.cardVariant2,
-                    ]}
-                    onPress={() => handleReportPress(r)}
-                  >
-                    <View>
-                      <Text style={styles.reportTitle}>
-                        {r.subtype === 'entrada'
-                          ? 'Reporte de entrada'
-                          : 'Reporte de salida'}
-                      </Text>
-                      <Text style={styles.reportDate}>
-                        {new Date(r.date).toLocaleDateString('es-MX')}
-                      </Text>
-                    </View>
-                    <CustomIcon
-                      name="chevron-forward"
-                      size={28}
-                      iconColor={COLORS.blackText}
-                      bgColor={COLORS.transparent}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ))}
-
-            {groupedReports.length === 0 && (
+            {loading ? (
+              <Text style={styles.emptyText}>Cargando reportes...</Text>
+            ) : error ? (
+              <Text style={[styles.emptyText, { color: 'red' }]}>{error}</Text>
+            ) : groupedReports.length === 0 ? (
               <Text style={styles.emptyText}>
                 No hay reportes disponibles para este mes.
               </Text>
+            ) : (
+              groupedReports.map(({ day, reports }) => (
+                <View key={day} style={styles.daySection}>
+                  <Text style={styles.sectionHeader}>
+                    {day} de {monthName} de {year}
+                  </Text>
+
+                  {reports.map((r, index) => (
+                    <TouchableOpacity
+                      key={`${r.titulo}-${index}`}
+                      style={[
+                        styles.reportCard,
+                        index % 2 === 0
+                          ? styles.cardVariant1
+                          : styles.cardVariant2,
+                      ]}
+                      onPress={() => handleReportPress(r)}
+                    >
+                      <View>
+                        <Text style={styles.reportTitle}>
+                          {r.tipo === 'entrada'
+                            ? 'Reporte de entrada'
+                            : 'Reporte de salida'}
+                        </Text>
+                        <Text style={styles.reportDate}>
+                          {new Date(r.fecha).toLocaleDateString('es-MX')}
+                        </Text>
+                      </View>
+                      <CustomIcon
+                        name="chevron-forward"
+                        size={28}
+                        iconColor={COLORS.blackText}
+                        bgColor={COLORS.transparent}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ))
             )}
           </ScrollView>
         </View>
