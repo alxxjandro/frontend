@@ -8,9 +8,27 @@ import CustomBottomBar from '../components/customBottomBar'
 import { SIZE, COLORS } from '../styles/globalStyles'
 import { StyleSheet } from 'react-native'
 import UserIcon from '../components/userIcon'
+import { useAuth } from '../hooks/useAuth'
+import { useInventario } from '../hooks/useInventario'
+import { useEffect, useState } from 'react'
 
 export default function Page() {
-  const name = 'Jorge Torres'
+  const { user } = useAuth()
+  const [productoCount, setProductCount] = useState(0)
+  const name =
+    user?.nombreUsuario.charAt(0).toUpperCase() +
+      user?.nombreUsuario.slice(1) || 'usuario'
+
+  const { inventario, fetchAll: fetchProductos } = useInventario()
+
+  //fetch and update the product count on mount
+  useEffect(() => {
+    fetchProductos()
+  }, [])
+
+  useEffect(() => {
+    setProductCount(inventario?.length)
+  }, [inventario])
 
   return (
     <SafeAreaProvider>
@@ -23,7 +41,7 @@ export default function Page() {
             }}
           >
             <View style={styles.userHeader}>
-              <UserIcon name="Jorge Torres" bgColor={COLORS.primaryBlue15} />
+              <UserIcon name={name} bgColor={COLORS.primaryBlue15} />
               <View
                 style={{
                   display: 'flex',
@@ -59,7 +77,7 @@ export default function Page() {
                 <Link href="/inventario" asChild>
                   <CustomSquareButton
                     title="Mi inventario"
-                    subtitle="79 productos"
+                    subtitle={`${productoCount} productos`}
                     icon="archive-outline"
                     borderColor={COLORS.brownAccent}
                     backgroundColor={COLORS.brownAccent15}

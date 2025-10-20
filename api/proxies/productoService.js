@@ -3,12 +3,7 @@ import { API_BASE_URL } from '@env'
 
 const ProductoServiceProxy = () => {
   async function getAllProductos() {
-    const response = await fetch(`${API_BASE_URL}/productos`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetch(`${API_BASE_URL}/productos`)
 
     if (!response.ok) {
       throw new Error('Error al obtener productos')
@@ -98,6 +93,43 @@ const ProductoServiceProxy = () => {
     return await response.json()
   }
 
+  async function getUnidades() {
+    const response = await fetch(`${API_BASE_URL}/unidades`)
+    if (!response.ok) {
+      throw new Error('Error al obtener las unidades')
+    }
+    return await response.json()
+  }
+
+  async function createUnidad() {
+    const response = await fetch(`${API_BASE_URL}/unidades`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      if (response.status === 400) throw new Error('Datos inválidos')
+      throw new Error('Error al crear unidad')
+    }
+
+    return await response.json()
+  }
+
+  async function getUltimasEntradas(id, limit) {
+    const response = await fetch(
+      `${API_BASE_URL}/entradas/producto/${id}?limit=${limit}`
+    )
+
+    if (!response.ok) {
+      throw new Error('Error al obtener las últimas entradas')
+    }
+
+    return await response.json()
+  }
+
   return {
     getAllProductos,
     getProductoById,
@@ -105,6 +137,9 @@ const ProductoServiceProxy = () => {
     createProducto,
     updateProducto,
     deleteProducto,
+    getUnidades,
+    createUnidad,
+    getUltimasEntradas,
   }
 }
 

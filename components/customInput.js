@@ -13,6 +13,7 @@ import { COLORS, FONTS } from '../styles/globalStyles'
  * @param {(text: string) => void} [props.onChangeText] - Callback for input change.
  * @param {boolean} [props.error] - If true, styles input with error state.
  * @param {boolean} [props.password] - If true, masks input for passwords.
+ * @param {boolean} [props.disabled] - Wether or not the input is disabled
  * @returns {JSX.Element} Styled input with label.
  */
 export default function CustomInput({
@@ -21,7 +22,8 @@ export default function CustomInput({
   value,
   onChangeText,
   error = false,
-  password = false, // 👈 nueva prop
+  password = false,
+  disabled = false, // 1. Recibe la nueva prop 'disabled'
 }) {
   const [isFocused, setIsFocused] = useState(false)
   const [isHidden, setIsHidden] = useState(password)
@@ -38,21 +40,24 @@ export default function CustomInput({
         style={[
           styles.input,
           {
-            borderColor: error
-              ? COLORS.error
-              : isFocused
-                ? COLORS.primaryBlue
-                : COLORS.greyBorder,
+            borderColor: disabled
+              ? COLORS.greyBorder
+              : error
+                ? COLORS.error
+                : isFocused
+                  ? COLORS.primaryBlue
+                  : COLORS.greyBorder,
+            backgroundColor: disabled ? COLORS.greyBorder : COLORS.background,
           },
         ]}
         placeholderTextColor={COLORS.greyBorder}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        secureTextEntry={isHidden} // 👈 activa censura
-        autoCapitalize={password ? 'none' : 'sentences'} // 👈 evita mayúsculas si es password
+        secureTextEntry={isHidden}
+        autoCapitalize={password ? 'none' : 'sentences'}
+        editable={!disabled} // 2. Aquí se usa la prop 'editable'
       />
-      {/* 
-        👇 Si en el futuro quieres un icono para mostrar/ocultar contraseña:
+      {/* 👇 Si en el futuro quieres un icono para mostrar/ocultar contraseña:
         <TouchableOpacity onPress={() => setIsHidden(!isHidden)} style={styles.icon}>
           <Ionicons
             name={isHidden ? 'eye-off' : 'eye'}

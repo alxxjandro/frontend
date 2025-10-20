@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   View,
@@ -16,56 +15,39 @@ import CustomButton from '../../components/customButton'
 import MoneyInput from '../../components/MoneyInput'
 import ProductList from '../../components/ProductList'
 import { useEntradas } from '../../hooks/useEntradas'
-import { useAuth } from '../../hooks/useAuth' // ✅ importamos el hook de auth
+import { useAuth } from '../../hooks/useAuth'
+import { useNuevaEntradaStore } from '../../stores/useNuevaEntradaStore'
+import Toast from '../../components/Toast'
 
 export default function NuevaEntrada() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
-  const [user, setUser] = useState(null) // ✅ aquí guardaremos el usuario autenticado
 
   const router = useRouter()
   const params = useLocalSearchParams() || {}
-  const newProduct = params?.newProduct ? JSON.parse(params.newProduct) : null
-  const returnTo = params.returnTo ?? null
 
-  const [fecha, setFecha] = useState()
-  const [monto, setMonto] = useState()
-  const [productos, setProductos] = useState([])
-  const [opcionEntrada, setOpcionEntrada] = useState('')
+  const {
+    fecha,
+    monto,
+    opcionEntrada,
+    productos,
+    setFecha,
+    setMonto,
+    setOpcionEntrada,
+    addProducto,
+    clearEntrada,
+  } = useNuevaEntradaStore()
 
   const { save, loading, error } = useEntradas()
-  const { isAuthenticated } = useAuth() // ✅ solo para verificar si hay sesión
+  const { user } = useAuth()
   const opcionesEntrada = ['Compra', 'Donación']
 
-  // ✅ Recuperamos el usuario autenticado desde AsyncStorage al iniciar
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem('user')
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser)
-          setUser(parsedUser)
-          console.log('Usuario autenticado:', parsedUser)
-        } else {
-          console.warn('No hay usuario autenticado en AsyncStorage')
-        }
-      } catch (e) {
-        console.error('Error al cargar usuario:', e)
-      }
-    }
-    fetchUser()
-  }, [])
-
-  // ✅ Mismo useEffect para productos, no lo tocamos
   useEffect(() => {
     if (params.newProduct) {
       try {
         const productObj = JSON.parse(params.newProduct)
-        setProductos((prev) => [...prev, productObj])
-        router.replace({
-          pathname: router.pathname,
-          params: {},
-        })
+        addProducto(productObj)
+        router.replace({ pathname: router.pathname, params: {} })
       } catch (e) {
         console.error('Error parsing newProduct:', e)
       }
@@ -78,40 +60,67 @@ export default function NuevaEntrada() {
     setDatePickerVisibility(false)
   }
 
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return ''
+    const fecha = new Date(fechaISO)
+    const localDate = new Date(
+      fecha.getTime() + fecha.getTimezoneOffset() * 60000
+    )
+
+    return localDate.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
   const handleRegistrarEntrada = async () => {
     if (!fecha || !opcionEntrada) {
-      alert('Por favor completa todos los campos obligatorios.')
+      Toast.show('Por favor completa todos los campos obligatorios.', 'error')
       return
     }
 
     if (!user) {
-      alert('Usuario no autenticado. Inicia sesión antes de registrar.')
+      Toast.show(
+        'Usuario no autenticado. Inicia sesión antes de registrar.',
+        'error'
+      )
+      return
+    }
+
+    if (productos.length === 0) {
+      Toast.show('Agrega al menos un producto a la entrada.', 'error')
       return
     }
 
     const productosParaBackend = productos.map((p) => ({
       idProducto: p.idProducto,
       idUnidad: p.idUnidad || 1,
-      cantidad: p.quantity.toString(),
-      fechaEstimada: p.hasExpirationDate ? new Date(p.hasExpirationDate) : new Date(), // ✅ usamos directamente la fecha ya existente
+      cantidad: Number(p.cantidad ?? p.quantity) || 1,
+      fechaEstimada: p.hasExpirationDate
+        ? new Date(p.hasExpirationDate)
+        : new Date(),
     }))
 
     const entradaData = {
-      idUsuario_usuario: user.idUsuario || user.id, // ✅ usamos el id dinámico
-      fechaEntrada: fecha,
+      idUsuario_usuario: user.idUsuario || user.id,
+      fechaEntrada: new Date(fecha),
       emisor: opcionEntrada === 'Donación' ? 'Donante' : 'Compra',
-      compra: opcionEntrada === 'Compra' ? parseFloat(monto) : 0,
+      compra: opcionEntrada === 'Compra' ? parseFloat(monto || 0) : 0,
       productos: productosParaBackend,
     }
 
-    console.log('📦 Datos que se enviarán al backend:', entradaData)
-
     const result = await save(entradaData)
-    if (result.success) {
-      alert('Entrada registrada con éxito.')
-      router.push('/nuevaEntrada')
+
+    if (result?.success) {
+      Toast.show('Entrada registrada con éxito', 'success')
+      clearEntrada()
+      setTimeout(() => router.push('/'), 800)
     } else {
-      alert(`Error al registrar la entrada: ${error || 'Inténtalo de nuevo.'}`)
+      Toast.show(
+        `Error al registrar la entrada: ${error || 'Inténtalo de nuevo.'}`,
+        'error'
+      )
     }
   }
 
@@ -164,7 +173,7 @@ export default function NuevaEntrada() {
             <View style={styles.dateWrapper}>
               <CustomDatePicker
                 label="Fecha de entrada"
-                date={fecha}
+                date={formatearFecha(fecha)}
                 isVisible={isDatePickerVisible}
                 onToggle={() => setDatePickerVisibility(true)}
                 onDateSelect={(d) => {
@@ -185,15 +194,17 @@ export default function NuevaEntrada() {
 
             <View style={{ flex: 1, justifyContent: 'flex-end' }}>
               <View style={styles.buttonGroup}>
-                <CustomButton
+                {/* <CustomButton
                   title="Guardar borrador"
-                  onPress={() => {}}
+                  onPress={() =>
+                    Toast.show('Funcionalidad en desarrollo', 'success')
+                  }
                   borderRadius={4}
                   textColor={COLORS.primaryBlue}
                   borderColor={COLORS.primaryBlue}
                   backgroundColor={COLORS.background}
                   textSize={12}
-                />
+                /> */}
                 <CustomButton
                   title="Registrar Entrada"
                   onPress={handleRegistrarEntrada}
@@ -204,6 +215,8 @@ export default function NuevaEntrada() {
                 />
               </View>
             </View>
+
+            <Toast.Container />
           </View>
         </TouchableWithoutFeedback>
       </SafeAreaView>

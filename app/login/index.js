@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import CustomInput from '../../components/customInput'
 import CustomButton from '../../components/customButton'
 import { useAuth } from '../../hooks/useAuth'
 import { ActivityIndicator } from 'react-native'
+import Spinner from '../../components/Spinner'
 
 export default function LoginScreen() {
   const [user, setUser] = useState('')
@@ -29,10 +30,6 @@ export default function LoginScreen() {
   const handleOutsidePress = () => {
     Keyboard.dismiss()
   }
-
-  useEffect(() => {
-    handleLogin('alexander','hola')
-  }, [])
 
   return (
     <TouchableWithoutFeedback onPress={handleOutsidePress}>
@@ -132,7 +129,6 @@ export default function LoginScreen() {
             backgroundColor={COLORS.primaryBlue}
           />
 
-          {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
           {showError && (
             <Text
               style={{
@@ -147,6 +143,7 @@ export default function LoginScreen() {
             </Text>
           )}
         </View>
+        <Spinner isVisible={loading} />
       </View>
     </TouchableWithoutFeedback>
   )

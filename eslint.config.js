@@ -16,6 +16,10 @@ export default [
       globals: {
         require: 'readonly',
       },
+      env: {
+        browser: true,
+        node: true,
+      },
       parser: babelParser,
       parserOptions: {
         requireConfigFile: false,
@@ -38,7 +42,7 @@ export default [
     rules: {
       semi: ['warn', 'never'],
       quotes: ['warn', 'single'],
-      'no-console': ['warn', { allow: ['error'] }],
+      // 'no-console': ['warn', { allow: ['error'] }],
       'prettier/prettier': 'warn',
       'react/prop-types': 'off',
       'react/jsx-uses-react': 'warn',

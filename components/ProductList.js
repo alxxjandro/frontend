@@ -20,9 +20,12 @@ export default function ProductList({
         </View>
       ) : (
         <View style={styles.productList}>
-          {products.map((product, index) => (
-            <View key={index} style={styles.productItem}>
-              <Text style={styles.productText}>{product.icon} {product.name} - {product.quantity} {product.unit}</Text>
+          {products.map((product) => (
+            <View key={product._uid} style={styles.productItem}>
+              <Text style={styles.productText}>
+                {product.emoji} {product.nombre} - {product.cantidad}{' '}
+                {product.unidad}
+              </Text>
             </View>
           ))}
         </View>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -16,29 +16,43 @@ import CustomDropdown from '../../components/CustomDropdown'
 import QuantityToggle from '../../components/QuantityToggle'
 import ExpirationToggle from '../../components/ExpirationToggle'
 import CustomButton from '../../components/customButton'
+import { useUnidades } from '../../hooks/useUnidades'
 
 export default function AgregarProducto() {
-  const params = useLocalSearchParams() || {}
-  const returnTo = params.returnTo ?? 'nuevaEntrada'  // fallback por si no se pasó
-
   const router = useRouter()
-  const { productName, productEmoji, productCategory, productID, idUnidad } = useLocalSearchParams()
+  const params = useLocalSearchParams()
+
+  const {
+    productName,
+    productEmoji,
+    productCategory,
+    productId,
+    idUnidad,
+    returnTo = 'nuevaEntrada',
+  } = params
+
+  const { unidades } = useUnidades()
+  const [unitFromId, setUnitFromId] = useState('Unidad')
+
+  useEffect(() => {
+    if (unidades?.length > 0 && idUnidad) {
+      const match = unidades.find((u) => u.idUnidad === Number(idUnidad))
+      if (match) {
+        setUnitFromId(match.unidad)
+      }
+    }
+  }, [unidades, idUnidad])
 
   const [selectedIcon] = useState(productEmoji || '📦')
-  const [nombreProducto, setNombreProducto] = useState(productName || '')
-  const [categoria, setCategoria] = useState(
-    productCategory || 'Higiene personal'
-  )
+  const [nombreProducto] = useState(productName || '')
+  const [categoria] = useState(productCategory || '')
   const [hasExpirationDate, setHasExpirationDate] = useState(false)
   const [expirationDays, setExpirationDays] = useState(7)
   const [timeUnit, setTimeUnit] = useState('Días')
   const [quantity, setQuantity] = useState(1)
-  const [unit, setUnit] = useState('Unidad')
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
-  const categoryOptions = ['Comida', 'Higiene personal', 'Enlatados', 'Frutas']
   const timeUnitOptions = ['Días', 'Semanas', 'Meses']
-  const unitOptions = ['Unidad', 'Kg', 'Paquete', 'Litro', 'Gramos']
 
   const handleOutsidePress = () => {
     Keyboard.dismiss()
@@ -51,16 +65,18 @@ export default function AgregarProducto() {
       icon: selectedIcon,
       category: categoria,
       quantity,
-      unit,
+      unit: unitFromId,
       hasExpirationDate,
       expirationDays: hasExpirationDate ? expirationDays : null,
       timeUnit: hasExpirationDate ? timeUnit : null,
-      idProducto: productID || 1,
-      idUnidad: idUnidad || 1,
+      idProducto: Number(productId),
+      idUnidad: Number(idUnidad),
     }
-    /* eslint-disable-next-line */
-    console.log('Producto agregado:', newProduct)
-    router.push({pathname: `/${returnTo}`, params: { newProduct: JSON.stringify(newProduct) }})
+
+    router.push({
+      pathname: `/${returnTo}`,
+      params: { newProduct: JSON.stringify(newProduct) },
+    })
   }
 
   return (
@@ -89,16 +105,17 @@ export default function AgregarProducto() {
                 label="Nombre del producto"
                 placeholder="Ej. Pasta dental"
                 value={nombreProducto}
-                onChangeText={setNombreProducto}
+                disabled={true}
               />
 
               <View style={styles.dropdownWrapper}>
                 <CustomDropdown
                   label="Categoría"
                   value={categoria}
-                  options={categoryOptions}
-                  onSelect={setCategoria}
+                  options={[categoria]}
+                  onSelect={() => {}}
                   isOpen={isCategoryOpen}
+                  disabled={true}
                   setIsOpen={setIsCategoryOpen}
                 />
               </View>
@@ -119,9 +136,9 @@ export default function AgregarProducto() {
                 <QuantityToggle
                   quantity={quantity}
                   onQuantityChange={setQuantity}
-                  unit={unit}
-                  onUnitChange={setUnit}
-                  unitOptions={unitOptions}
+                  unit={unitFromId}
+                  onUnitChange={() => {}}
+                  unitOptions={[unitFromId]}
                 />
               </View>
             </ScrollView>
