@@ -29,7 +29,6 @@ export default function ReporteDetalleScreen() {
 
   // Cargar datos desde la base de datos
   useEffect(() => {
-
     const loadReportDetail = async () => {
       try {
         setLoading(true)
@@ -44,11 +43,12 @@ export default function ReporteDetalleScreen() {
           // Backend returns { success: true, data: [...] } with flat structure
           if (Array.isArray(res.data)) {
             data = res.data
-            
+
             // Try to get usuario from different possible locations
-            usuario = res.usuario || // Top level
-                     res.data[0]?.usuario || // First item
-                     res.data[0]?.entrada?.usuario // Nested in entrada
+            usuario =
+              res.usuario || // Top level
+              res.data[0]?.usuario || // First item
+              res.data[0]?.entrada?.usuario // Nested in entrada
           } else if (res.data?.productos && Array.isArray(res.data.productos)) {
             data = res.data.productos
             usuario = res.data.usuario || res.usuario
@@ -64,16 +64,20 @@ export default function ReporteDetalleScreen() {
         }
 
         setReportData(data)
-        
+
         // Set user name for subtitle
         if (usuario) {
-          const fullName = `${usuario.nombreUsuario || ''} ${usuario.apellidoPaterno || ''}`.trim()
+          const fullName =
+            `${usuario.nombreUsuario || ''} ${usuario.apellidoPaterno || ''}`.trim()
           setUserName(fullName || 'Desconocido')
         } else {
           setUserName('Desconocido')
         }
       } catch (err) {
-        console.error('❌ [ReportDetail] Error cargando detalle del reporte:', err)
+        console.error(
+          '❌ [ReportDetail] Error cargando detalle del reporte:',
+          err
+        )
         setError(err.message)
       } finally {
         setLoading(false)
@@ -90,29 +94,38 @@ export default function ReporteDetalleScreen() {
   const handleDownloadExcel = () => console.log('Descargar Excel')
   const handleDownloadPDF = () => console.log('Descargar PDF')
 
-  // Renderizado de filas 
+  // Renderizado de filas
   const renderTableRow = ({ item, index }) => {
     // Handle flat structure from backend
     // Backend returns: { cantidad, producto, categoria, fechaEntrada }
     const cantidad = item.cantidad ?? item.entradaProducto?.cantidad ?? '-'
-    
+
     // For flat structure: producto is a string
     // For nested structure: producto.nombreProducto
-    const nombreProducto = typeof item.producto === 'string' 
-      ? item.producto 
-      : (item.producto?.nombreProducto || item.entradaProducto?.producto?.nombreProducto || '-')
-    
+    const nombreProducto =
+      typeof item.producto === 'string'
+        ? item.producto
+        : item.producto?.nombreProducto ||
+          item.entradaProducto?.producto?.nombreProducto ||
+          '-'
+
     // For flat structure: categoria is a string
     // For nested structure: producto.departamento.nombreDepartamento
-    const nombreDepartamento = typeof item.categoria === 'string'
-      ? item.categoria
-      : (item.producto?.departamento?.nombreDepartamento || 
-         item.entradaProducto?.producto?.departamento?.nombreDepartamento || 
-         item.categoria || '-')
-    
+    const nombreDepartamento =
+      typeof item.categoria === 'string'
+        ? item.categoria
+        : item.producto?.departamento?.nombreDepartamento ||
+          item.entradaProducto?.producto?.departamento?.nombreDepartamento ||
+          item.categoria ||
+          '-'
+
     // Unit might be in item.unidad or nested
-    const unidad = item.unidad?.unidad || item.entradaProducto?.unidad?.unidad || item.unidad || ''
-    
+    const unidad =
+      item.unidad?.unidad ||
+      item.entradaProducto?.unidad?.unidad ||
+      item.unidad ||
+      ''
+
     // For reports, the date should be the report date itself (when the entrada/salida was created)
     // Not the expiration date or any other date
     const fecha = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`
@@ -131,9 +144,7 @@ export default function ReporteDetalleScreen() {
         <Text style={[styles.tableCell, styles.colCategoria]}>
           {nombreDepartamento}
         </Text>
-        <Text style={[styles.tableCell, styles.colFecha]}>
-          {fecha}
-        </Text>
+        <Text style={[styles.tableCell, styles.colFecha]}>{fecha}</Text>
       </View>
     )
   }
@@ -145,7 +156,7 @@ export default function ReporteDetalleScreen() {
           <View style={styles.container}>
             {/* Header */}
             <ScreenHeader
-              title={cleanName || 'Detalle del reporte'}   
+              title={cleanName || 'Detalle del reporte'}
               subtitle={`Realizado por ${userName}`}
               showBackButton
               paddingHorizontal={0}

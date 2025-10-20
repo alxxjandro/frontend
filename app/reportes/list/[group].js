@@ -48,7 +48,7 @@ const MONTH_TO_NUMBER = {
 
 export default function Group() {
   const router = useRouter()
-  const { group } = useLocalSearchParams() 
+  const { group } = useLocalSearchParams()
   const { fetchReportesByDate } = useLogs()
 
   const [reports, setReports] = useState([])
@@ -73,64 +73,63 @@ export default function Group() {
 
   // Cargar reportes desde el backend
   useEffect(() => {
-  const loadReports = async () => {
-    try {
-      setLoading(true)
-      setError(null)
+    const loadReports = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-      // Normalizamos el mes
-      let monthNumber = parseInt(rawMonth)
-      if (isNaN(monthNumber)) {
-        monthNumber = MONTH_TO_NUMBER[rawMonth?.toLowerCase()?.trim()]
-      }
-
-      if (!monthNumber) {
-        throw new Error(`Mes inválido o no reconocido: ${rawMonth}`)
-      }
-
-      const res = await fetchReportesByDate(year, monthNumber)
-      
-      console.log('📅 [Group] fetchReportesByDate response:', res)
-
-      let fetchedReports = []
-
-      if (res?.success) {
-        if (Array.isArray(res.data)) {
-          fetchedReports = res.data
-        } else if (Array.isArray(res?.data?.reportes)) {
-          fetchedReports = res.data.reportes
-        } else if (Array.isArray(res?.data?.data)) {
-          fetchedReports = res.data.data
+        // Normalizamos el mes
+        let monthNumber = parseInt(rawMonth)
+        if (isNaN(monthNumber)) {
+          monthNumber = MONTH_TO_NUMBER[rawMonth?.toLowerCase()?.trim()]
         }
+
+        if (!monthNumber) {
+          throw new Error(`Mes inválido o no reconocido: ${rawMonth}`)
+        }
+
+        const res = await fetchReportesByDate(year, monthNumber)
+
+        console.log('📅 [Group] fetchReportesByDate response:', res)
+
+        let fetchedReports = []
+
+        if (res?.success) {
+          if (Array.isArray(res.data)) {
+            fetchedReports = res.data
+          } else if (Array.isArray(res?.data?.reportes)) {
+            fetchedReports = res.data.reportes
+          } else if (Array.isArray(res?.data?.data)) {
+            fetchedReports = res.data.data
+          }
+        }
+
+        console.log('📅 [Group] fetchedReports:', fetchedReports)
+
+        // Si no hay datos válidos, error controlado
+        if (!Array.isArray(fetchedReports) || fetchedReports.length === 0) {
+          console.warn('No se encontraron reportes válidos en la respuesta.')
+        }
+
+        setReports(
+          fetchedReports.map((r) => ({
+            ...r,
+            tipo: r.tipo?.toLowerCase() || 'desconocido',
+          }))
+        )
+      } catch (err) {
+        console.error('Error cargando reportes:', err)
+        setReports([])
+        setError(err.message)
+      } finally {
+        setLoading(false)
       }
-
-      console.log('📅 [Group] fetchedReports:', fetchedReports)
-
-      // Si no hay datos válidos, error controlado
-      if (!Array.isArray(fetchedReports) || fetchedReports.length === 0) {
-        console.warn('No se encontraron reportes válidos en la respuesta.')
-      }
-
-      setReports(
-        fetchedReports.map(r => ({
-          ...r,
-          tipo: r.tipo?.toLowerCase() || 'desconocido'
-        }))
-      )
-
-    } catch (err) {
-      console.error('Error cargando reportes:', err)
-      setReports([])
-      setError(err.message)
-    } finally {
-      setLoading(false)
     }
-  }
 
-  if (year && rawMonth) {
-    loadReports()
-  }
-}, [year, rawMonth])
+    if (year && rawMonth) {
+      loadReports()
+    }
+  }, [year, rawMonth])
 
   // Filtrar reportes por tipo
   const filteredReports = useMemo(() => {
@@ -162,32 +161,32 @@ export default function Group() {
     return sortedDays
   }, [filteredReports, sortOrder])
 
-const handleReportPress = (report) => {
-  const fecha = new Date(report.fecha)
-  
-  // Use UTC methods to avoid timezone issues
-  const year = fecha.getUTCFullYear()
-  const month = fecha.getUTCMonth() + 1
-  const day = fecha.getUTCDate()
-  
-  console.log('🔍 [Group] Report clicked:', {
-    reportFecha: report.fecha,
-    extractedDate: { year, month, day },
-    tipo: report.tipo
-  })
+  const handleReportPress = (report) => {
+    const fecha = new Date(report.fecha)
 
-  router.push({
-    pathname: '/reportes/detalle',
-    params: {
-      id: report.id,
-      name: report.titulo,
-      year,
-      month,
-      day,
-      tipo: report.tipo, 
-    },
-  })
-}
+    // Use UTC methods to avoid timezone issues
+    const year = fecha.getUTCFullYear()
+    const month = fecha.getUTCMonth() + 1
+    const day = fecha.getUTCDate()
+
+    console.log('🔍 [Group] Report clicked:', {
+      reportFecha: report.fecha,
+      extractedDate: { year, month, day },
+      tipo: report.tipo,
+    })
+
+    router.push({
+      pathname: '/reportes/detalle',
+      params: {
+        id: report.id,
+        name: report.titulo,
+        year,
+        month,
+        day,
+        tipo: report.tipo,
+      },
+    })
+  }
 
   const handleOutsidePress = () => {
     Keyboard.dismiss()
