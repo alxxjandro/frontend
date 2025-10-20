@@ -12,9 +12,6 @@ const UsuariosServiceProxy = () => {
     }
 
     const result = await response.json()
-    console.log('Respuesta API getAllUsuarios:', result)
-
-    // Retornamos directamente el arreglo que está en result.data
     if (result.success && Array.isArray(result.data)) {
       return result.data
     }

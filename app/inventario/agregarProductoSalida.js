@@ -14,45 +14,52 @@ import ScreenHeader from '../../components/ScreenHeader'
 import CustomInput from '../../components/customInput'
 import CustomDropdown from '../../components/CustomDropdown'
 import QuantityToggle from '../../components/QuantityToggle'
-import ExpirationToggle from '../../components/ExpirationToggle'
 import CustomButton from '../../components/customButton'
 import { useUnidades } from '../../hooks/useUnidades'
+import { useInventario } from '../../hooks/useInventario'
+import { useNuevaSalidaStore } from '../../stores/useNuevaSalidaStore'
+import Toast from '../../components/Toast'
 
-export default function AgregarProducto() {
+export default function AgregarProductoSalida() {
   const router = useRouter()
   const params = useLocalSearchParams()
-
-  const {
-    productName,
-    productEmoji,
-    productCategory,
-    productId,
-    idUnidad,
-    returnTo = 'nuevaEntrada',
-  } = params
+  const { productName, productEmoji, productCategory, productId, idUnidad } =
+    params
 
   const { unidades } = useUnidades()
+  const { fetchAll: fetchInventario } = useInventario()
+  const { addProducto } = useNuevaSalidaStore()
+
+  const [inventario, setInventario] = useState([])
   const [unitFromId, setUnitFromId] = useState('Unidad')
+  const [quantity, setQuantity] = useState(1)
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
   useEffect(() => {
     if (unidades?.length > 0 && idUnidad) {
       const match = unidades.find((u) => u.idUnidad === Number(idUnidad))
-      if (match) {
-        setUnitFromId(match.unidad)
-      }
+      if (match) setUnitFromId(match.unidad)
     }
   }, [unidades, idUnidad])
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await fetchInventario()
+        if (res?.success && Array.isArray(res.data)) {
+          setInventario(res.data)
+        }
+      } catch (e) {
+        Toast.show('Error al leer inventario', 'error')
+        console.error('Error al leer inventario: ', e)
+      }
+    }
+    fetch()
+  }, [])
 
   const [selectedIcon] = useState(productEmoji || '📦')
   const [nombreProducto] = useState(productName || '')
   const [categoria] = useState(productCategory || '')
-  const [hasExpirationDate, setHasExpirationDate] = useState(false)
-  const [expirationDays, setExpirationDays] = useState(7)
-  const [timeUnit, setTimeUnit] = useState('Días')
-  const [quantity, setQuantity] = useState(1)
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
-
-  const timeUnitOptions = ['Días', 'Semanas', 'Meses']
 
   const handleOutsidePress = () => {
     Keyboard.dismiss()
@@ -60,35 +67,55 @@ export default function AgregarProducto() {
   }
 
   const handleAddProduct = () => {
-    const newProduct = {
-      name: nombreProducto,
-      icon: selectedIcon,
-      category: categoria,
-      quantity,
-      unit: unitFromId,
-      hasExpirationDate,
-      expirationDays: hasExpirationDate ? expirationDays : null,
-      timeUnit: hasExpirationDate ? timeUnit : null,
-      idProducto: Number(productId),
-      idUnidad: Number(idUnidad),
+    const cantidadSolicitada = Number(quantity)
+    const inventarioProducto = inventario?.find(
+      (item) => item.idProducto_producto === Number(productId)
+    )
+
+    if (!inventarioProducto) {
+      return Toast.show(
+        'No se pudo verificar la cantidad disponible en inventario.',
+        'error'
+      )
     }
 
-    router.push({
-      pathname: `/${returnTo}`,
-      params: { newProduct: JSON.stringify(newProduct) },
-    })
+    const disponible = Number(inventarioProducto.cantidadTotal)
+    if (cantidadSolicitada > disponible) {
+      return Toast.show(
+        `Solo hay ${disponible} ${unitFromId} disponibles de este producto.`,
+        'error'
+      )
+    }
+
+    const newProduct = {
+      nombre: nombreProducto,
+      emoji: selectedIcon,
+      categoria,
+      cantidad: cantidadSolicitada,
+      unidad: unitFromId,
+      idProducto: Number(productId),
+      idUnidad: Number(idUnidad),
+      _uid: Date.now() + Math.random(),
+    }
+
+    addProducto(newProduct)
+    Toast.show('Producto agregado a la salida', 'success')
+    router.replace('/nuevaSalida')
   }
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={globalStyles.body}>
+        <Toast.Container />
+
         <TouchableWithoutFeedback onPress={handleOutsidePress}>
           <View style={styles.container}>
             <ScreenHeader
               paddingHorizontal={0}
-              title="Agregar producto (entrada)"
+              title="Agregar producto (salida)"
               showBackButton={true}
               backIconName="close"
+              onBackPress={() => router.back()}
             />
 
             <ScrollView
@@ -113,26 +140,13 @@ export default function AgregarProducto() {
                   label="Categoría"
                   value={categoria}
                   options={[categoria]}
-                  onSelect={() => {}}
                   isOpen={isCategoryOpen}
                   disabled={true}
                   setIsOpen={setIsCategoryOpen}
                 />
               </View>
 
-              <View style={{ marginTop: 10 }}>
-                <ExpirationToggle
-                  hasExpirationDate={hasExpirationDate}
-                  onToggleChange={setHasExpirationDate}
-                  expirationDays={expirationDays}
-                  onDaysChange={setExpirationDays}
-                  timeUnit={timeUnit}
-                  onTimeUnitChange={setTimeUnit}
-                  timeUnitOptions={timeUnitOptions}
-                />
-              </View>
-
-              <View style={{ marginTop: 12 }}>
+              <View style={{ marginTop: 20 }}>
                 <QuantityToggle
                   quantity={quantity}
                   onQuantityChange={setQuantity}
@@ -140,15 +154,32 @@ export default function AgregarProducto() {
                   onUnitChange={() => {}}
                   unitOptions={[unitFromId]}
                 />
+                {inventario.length > 0 && (
+                  <Text
+                    style={{
+                      fontFamily: FONTS.regular,
+                      fontSize: FONTS.size.sm,
+                      color: COLORS.greyText,
+                      marginTop: 8,
+                      textAlign: 'center',
+                    }}
+                  >
+                    Disponibles:{' '}
+                    {inventario.find(
+                      (i) => i.idProducto_producto === Number(productId)
+                    )?.cantidadTotal ?? '—'}{' '}
+                    {unitFromId}
+                  </Text>
+                )}
               </View>
             </ScrollView>
 
             <View style={styles.bottomContainer}>
               <CustomButton
-                title="Agregar a entrada"
+                title="Agregar a salida"
                 iconRight="add"
                 onPress={handleAddProduct}
-                backgroundColor={COLORS.primaryGreen}
+                backgroundColor={COLORS.primaryBlue}
                 textColor="#fff"
                 textSize={FONTS.size.sm}
                 borderRadius={8}
@@ -171,21 +202,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     position: 'relative',
   },
-  scrollContent: {
-    paddingBottom: 120,
-  },
+  scrollContent: { paddingBottom: 120 },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 20,
   },
-  productIcon: {
-    fontSize: 72,
-  },
-  dropdownWrapper: {
-    marginTop: 10,
-    zIndex: 10,
-  },
+  productIcon: { fontSize: 72 },
+  dropdownWrapper: { marginTop: 10, zIndex: 10 },
   bottomContainer: {
     position: 'absolute',
     bottom: 10,

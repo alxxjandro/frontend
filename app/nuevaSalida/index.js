@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   View,
   TouchableWithoutFeedback,
@@ -10,22 +10,51 @@ import { globalStyles, COLORS } from '../../styles/globalStyles'
 import ScreenHeader from '../../components/ScreenHeader'
 import CustomDropdown from '../../components/CustomDropdown'
 import CustomDatePicker from '../../components/CustomDatePicker'
-import ProductList from '../../components/ProductList'
+import ProductListSalida from '../../components/ProductListSalida'
 import CustomButton from '../../components/customButton'
+import Spinner from '../../components/Spinner'
+import Toast from '../../components/Toast'
 import { useRouter } from 'expo-router'
 
+import { useAuth } from '../../hooks/useAuth'
+import { useRazonesSalida } from '../../hooks/useRazonesSalida'
+import { useNuevaSalidaStore } from '../../stores/useNuevaSalidaStore'
+import SalidasServiceProxy from '../../api/proxies/salidaService'
+
 export default function NuevaSalida() {
+  const router = useRouter()
+  const { user } = useAuth()
+  const salidasProxy = SalidasServiceProxy()
+
+  const { razones, loading: loadingRazones } = useRazonesSalida()
+  const {
+    fechaSalida,
+    setFechaSalida,
+    idRazon,
+    setRazon,
+    productos,
+    clearSalida,
+  } = useNuevaSalidaStore()
+
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return ''
+    const fecha = new Date(fechaISO)
+    const localDate = new Date(
+      fecha.getTime() + fecha.getTimezoneOffset() * 60000
+    )
+
+    return localDate.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
+  const [sending, setSending] = useState(false)
 
-  const [fecha, setFecha] = useState('14/09/2025')
-  const [motivo, setMotivo] = useState('')
-  /* eslint-disable-next-line */
-  const [productos, setProductos] = useState([])
-
-  const opcionesMotivo = ['Merma', 'Uso cocina', 'Uso personal']
-
-  const router = useRouter()
+  const opcionesMotivo = useMemo(() => razones.map((r) => r.razon), [razones])
 
   const handleOutsidePress = () => {
     Keyboard.dismiss()
@@ -33,14 +62,65 @@ export default function NuevaSalida() {
     setDatePickerVisibility(false)
   }
 
-  const handleRegisterSalida = () => {
-    /* eslint-disable-next-line */
-    console.log('Registrando salida:', { motivo, fecha, productos })
+  const handleSelectMotivo = (nombreRazon) => {
+    const razonObj = razones.find((r) => r.razon === nombreRazon)
+    if (razonObj) setRazon(razonObj.idRazon)
+  }
+
+  const handleRegisterSalida = async () => {
+    try {
+      if (!user?.id) {
+        return Toast.show('Usuario no autenticado.', 'error')
+      }
+
+      if (!idRazon) {
+        return Toast.show('Selecciona un motivo de salida.', 'error')
+      }
+
+      if (!fechaSalida) {
+        return Toast.show('Selecciona una fecha de salida.', 'error')
+      }
+
+      if (productos.length === 0) {
+        return Toast.show('Agrega al menos un producto.', 'error')
+      }
+
+      const payload = {
+        idUsuario: user.id,
+        idRazon,
+        fechaSalida,
+        productos: productos.map(({ idProducto, cantidad }) => ({
+          idProducto,
+          cantidad,
+        })),
+      }
+
+      setSending(true)
+
+      const resp = await salidasProxy.createSalida(payload)
+
+      if (resp?.success) {
+        Toast.show('Salida registrada correctamente', 'success')
+
+        setTimeout(() => {
+          clearSalida()
+          router.replace('/')
+        }, 1200)
+      } else {
+        throw new Error(resp?.message || 'Error al registrar salida.')
+      }
+    } catch (err) {
+      console.error('Error al registrar salida:', err)
+      Toast.show(err.message || 'No se pudo registrar la salida.', 'error')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={globalStyles.body}>
+        <Toast.Container />
         <TouchableWithoutFeedback onPress={handleOutsidePress}>
           <View style={styles.container}>
             <ScreenHeader
@@ -58,35 +138,39 @@ export default function NuevaSalida() {
             <View style={styles.dropdownWrapper}>
               <CustomDropdown
                 label="Motivo de la salida"
-                value={motivo}
-                placeholder="Seleccionar"
+                value={
+                  idRazon
+                    ? razones.find((r) => r.idRazon === idRazon)?.razon
+                    : ''
+                }
+                placeholder={loadingRazones ? 'Cargando...' : 'Seleccionar'}
                 options={opcionesMotivo}
                 isOpen={isDropdownOpen}
                 setIsOpen={setIsDropdownOpen}
-                onSelect={setMotivo}
+                onSelect={handleSelectMotivo}
+                disabled={loadingRazones || opcionesMotivo.length === 0}
               />
             </View>
 
             <View style={styles.dateWrapper}>
               <CustomDatePicker
                 label="Fecha de salida"
-                date={fecha}
+                date={formatearFecha(fechaSalida)}
                 isVisible={isDatePickerVisible}
                 onToggle={() => setDatePickerVisibility(true)}
                 onDateSelect={(d) => {
-                  setFecha(d)
+                  setFechaSalida(d)
                   setDatePickerVisibility(false)
                 }}
                 onCancel={() => setDatePickerVisibility(false)}
               />
             </View>
 
-            <ProductList
+            <ProductListSalida
               title="Productos de la salida"
-              products={productos}
-              addButtonText="Agregar un producto del inventario"
-              emptyMessage="Esta salida no cuenta con ningún productos..."
-              navigateTo="/inventario"
+              addButtonText="Agregar del inventario"
+              emptyMessage="Esta salida no cuenta con ningún producto..."
+              navigateTo="/inventario?mode=select&returnTo=nuevaSalida"
             />
 
             <View style={styles.bottomButton}>
@@ -104,6 +188,8 @@ export default function NuevaSalida() {
             </View>
           </View>
         </TouchableWithoutFeedback>
+
+        <Spinner isVisible={loadingRazones || sending} />
       </SafeAreaView>
     </SafeAreaProvider>
   )

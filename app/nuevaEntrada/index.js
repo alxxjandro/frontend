@@ -18,10 +18,12 @@ import { useEntradas } from '../../hooks/useEntradas'
 import { useAuth } from '../../hooks/useAuth'
 import { useNuevaEntradaStore } from '../../stores/useNuevaEntradaStore'
 import Toast from '../../components/Toast'
+import Spinner from '../../components/Spinner'
 
 export default function NuevaEntrada() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
+  const [sending, setSending] = useState(false)
 
   const router = useRouter()
   const params = useLocalSearchParams() || {}
@@ -93,6 +95,7 @@ export default function NuevaEntrada() {
       return
     }
 
+    setSending(true)
     const productosParaBackend = productos.map((p) => ({
       idProducto: p.idProducto,
       idUnidad: p.idUnidad || 1,
@@ -122,6 +125,7 @@ export default function NuevaEntrada() {
         'error'
       )
     }
+    setSending(false)
   }
 
   return (
@@ -194,17 +198,6 @@ export default function NuevaEntrada() {
 
             <View style={{ flex: 1, justifyContent: 'flex-end' }}>
               <View style={styles.buttonGroup}>
-                {/* <CustomButton
-                  title="Guardar borrador"
-                  onPress={() =>
-                    Toast.show('Funcionalidad en desarrollo', 'success')
-                  }
-                  borderRadius={4}
-                  textColor={COLORS.primaryBlue}
-                  borderColor={COLORS.primaryBlue}
-                  backgroundColor={COLORS.background}
-                  textSize={12}
-                /> */}
                 <CustomButton
                   title="Registrar Entrada"
                   onPress={handleRegistrarEntrada}
@@ -219,6 +212,8 @@ export default function NuevaEntrada() {
             <Toast.Container />
           </View>
         </TouchableWithoutFeedback>
+
+        <Spinner isVisible={sending} />
       </SafeAreaView>
     </SafeAreaProvider>
   )

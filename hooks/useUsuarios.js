@@ -21,7 +21,6 @@ export function useUsuarios() {
     setError(null)
     try {
       const data = await getAllUsuarios()
-      console.log('Usuarios obtenidos:', data)
       setUsuarios(data)
       return { success: true, data }
     } catch (err) {

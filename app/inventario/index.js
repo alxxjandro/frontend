@@ -23,6 +23,11 @@ export default function InventarioScreen() {
     fetchAll: fetchProductos,
     fetchCategorias,
   } = useProducto()
+
+  const [tipoVista, setTipoVista] = useState('Completa')
+  const [ordenarPor, setOrdenarPor] = useState('Nombre')
+  const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState([])
+
   const [modalStates, setModalStates] = useState({
     tipoVista: false,
     ordenarPor: false,
@@ -37,7 +42,11 @@ export default function InventarioScreen() {
 
   const MODAL_CONFIGS = useMemo(
     () => ({
-      tipoVista: { title: 'Tipo de vista', options: ['Completa', 'Compacta'] },
+      tipoVista: {
+        title: 'Tipo de vista',
+        options: ['Completa', 'Compacta'],
+        single: true,
+      },
       ordenarPor: {
         title: 'Ordenar por',
         options: [
@@ -48,10 +57,12 @@ export default function InventarioScreen() {
           'FechaSalida',
           'Caducidad',
         ],
+        single: true,
       },
       categorias: {
         title: 'Categorías',
         options: categorias.map((c) => c.nombreDepartamento),
+        single: false,
       },
     }),
     [categorias]
@@ -60,10 +71,29 @@ export default function InventarioScreen() {
   const toggleModal = (modalName) =>
     setModalStates((prev) => ({ ...prev, [modalName]: !prev[modalName] }))
 
+  const handleSingleOptionSelect = (modalKey, option) => {
+    if (modalKey === 'tipoVista') setTipoVista(option)
+    if (modalKey === 'ordenarPor') setOrdenarPor(option)
+    toggleModal(modalKey)
+  }
+
+  const handleCategoryToggle = (option) => {
+    setCategoriasSeleccionadas((prev) =>
+      prev.includes(option)
+        ? prev.filter((cat) => cat !== option)
+        : [...prev, option]
+    )
+  }
+
   const handleProductPress = (productRoute, product) => {
     if (mode === 'select') {
+      const path =
+        returnTo === 'nuevaSalida'
+          ? '/inventario/agregarProductoSalida'
+          : '/inventario/agregarProducto'
+
       router.push({
-        pathname: '/inventario/agregarProducto',
+        pathname: path,
         params: {
           productId: product.productId,
           productName: product.name,
@@ -125,6 +155,8 @@ export default function InventarioScreen() {
                 mode={mode}
                 returnTo={returnTo}
                 loading={loading}
+                tipoVista={tipoVista}
+                ordenarPor={ordenarPor}
               />
             </ScrollView>
 
@@ -135,11 +167,24 @@ export default function InventarioScreen() {
                 onClose={() => toggleModal(modalKey)}
                 title={config.title}
                 options={config.options}
+                selectedOption={
+                  config.single
+                    ? modalKey === 'tipoVista'
+                      ? tipoVista
+                      : ordenarPor
+                    : undefined
+                }
+                onOptionSelect={
+                  config.single
+                    ? (option) => handleSingleOptionSelect(modalKey, option)
+                    : handleCategoryToggle
+                }
               />
             ))}
           </View>
         </SafeAreaView>
       </SafeAreaProvider>
+
       <Spinner isVisible={loading} />
     </>
   )
