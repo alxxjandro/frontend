@@ -14,8 +14,8 @@ import CustomIcon from '../../../components/customIcon'
 import CustomDropdown from '../../../components/CustomDropdown'
 import { globalStyles, COLORS, FONTS } from '../../../styles/globalStyles'
 import { useLogs } from '../../../hooks/useLogs'
+import Spinner from '../../../components/Spinner'
 
-// Meses en español
 const MONTH_NAMES = [
   'Enero',
   'Febrero',
@@ -62,23 +62,18 @@ export default function Group() {
 
   const reportTypeOptions = ['Todos', 'Entrada', 'Salida']
   const sortOptions = ['Más reciente', 'Más antiguo']
-
-  // Extraer año y mes desde "group"
   const [year, rawMonth] = group ? group.split('-') : []
 
-  // Mostrar nombre legible del mes
   const monthName =
     MONTH_NAMES.find((m) => m.toLowerCase() === rawMonth?.toLowerCase()) ||
     rawMonth
 
-  // Cargar reportes desde el backend
   useEffect(() => {
     const loadReports = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Normalizamos el mes
         let monthNumber = parseInt(rawMonth)
         if (isNaN(monthNumber)) {
           monthNumber = MONTH_TO_NUMBER[rawMonth?.toLowerCase()?.trim()]
@@ -89,8 +84,6 @@ export default function Group() {
         }
 
         const res = await fetchReportesByDate(year, monthNumber)
-
-        console.log('📅 [Group] fetchReportesByDate response:', res)
 
         let fetchedReports = []
 
@@ -104,9 +97,6 @@ export default function Group() {
           }
         }
 
-        console.log('📅 [Group] fetchedReports:', fetchedReports)
-
-        // Si no hay datos válidos, error controlado
         if (!Array.isArray(fetchedReports) || fetchedReports.length === 0) {
           console.warn('No se encontraron reportes válidos en la respuesta.')
         }
@@ -131,7 +121,6 @@ export default function Group() {
     }
   }, [year, rawMonth])
 
-  // Filtrar reportes por tipo
   const filteredReports = useMemo(() => {
     if (reportType === 'Todos') return reports
     return reports.filter(
@@ -139,13 +128,11 @@ export default function Group() {
     )
   }, [reports, reportType])
 
-  // Agrupar reportes por día
   const groupedReports = useMemo(() => {
     const map = {}
 
     filteredReports.forEach((r) => {
       const date = new Date(r.fecha)
-      // ✅ Use UTC to match the navigation logic
       const day = date.getUTCDate()
 
       if (!map[day]) map[day] = []
@@ -164,16 +151,9 @@ export default function Group() {
   const handleReportPress = (report) => {
     const fecha = new Date(report.fecha)
 
-    // Use UTC methods to avoid timezone issues
     const year = fecha.getUTCFullYear()
     const month = fecha.getUTCMonth() + 1
     const day = fecha.getUTCDate()
-
-    console.log('🔍 [Group] Report clicked:', {
-      reportFecha: report.fecha,
-      extractedDate: { year, month, day },
-      tipo: report.tipo,
-    })
 
     router.push({
       pathname: '/reportes/detalle',
@@ -198,7 +178,6 @@ export default function Group() {
     <SafeAreaView style={globalStyles.body}>
       <TouchableWithoutFeedback onPress={handleOutsidePress}>
         <View style={{ flex: 1 }}>
-          {/* HEADER + FILTROS */}
           <View style={{ alignItems: 'center' }}>
             <View style={styles.headerContainer}>
               <View style={styles.header}>
@@ -256,7 +235,6 @@ export default function Group() {
             </View>
           </View>
 
-          {/* LISTA SCROLLEABLE */}
           <ScrollView
             contentContainerStyle={{
               alignItems: 'center',
@@ -314,6 +292,7 @@ export default function Group() {
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
+      <Spinner isVisible={loading} />
     </SafeAreaView>
   )
 }

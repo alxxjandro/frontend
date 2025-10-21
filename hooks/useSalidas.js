@@ -1,21 +1,21 @@
 import { useState } from 'react'
-import EntradasServiceProxy from '../api/proxies/entradasService'
+import SalidasServiceProxy from '../api/proxies/salidaService'
 
-export function useEntradas() {
+export function useSalidas() {
   const [loading, setLoading] = useState(false)
-  const [entradas, setEntradas] = useState([])
+  const [salidas, setSalidas] = useState([])
   const [selected, setSelected] = useState(null)
   const [error, setError] = useState(null)
 
-  const { getAllEntradas, getEntradaById, createEntrada } =
-    EntradasServiceProxy()
+  const { getAllSalidas, getSalidaById, createSalida, getRazonesSalida } =
+    SalidasServiceProxy()
 
-  const fetchEntradas = async () => {
+  const fetchSalidas = async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await getAllEntradas()
-      setEntradas(data)
+      const data = await getAllSalidas()
+      setSalidas(data)
       return { success: true, data }
     } catch (err) {
       setError(err.message)
@@ -25,11 +25,11 @@ export function useEntradas() {
     }
   }
 
-  const fetchEntradaById = async (id) => {
+  const fetchSalidaById = async (id) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await getEntradaById(id)
+      const data = await getSalidaById(id)
       setSelected(data)
       return { success: true, data }
     } catch (err) {
@@ -40,13 +40,26 @@ export function useEntradas() {
     }
   }
 
-  const save = async (entradaData) => {
+  const fetchRazonesSalida = async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await createEntrada(entradaData)
+      const data = await getRazonesSalida()
+      return { success: true, data }
+    } catch (err) {
+      setError(err.message)
+      return { success: false, error: err.message }
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      setEntradas((prev) => [...prev, data])
+  const save = async (salidaData) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await createSalida(salidaData)
+      setSalidas((prev) => [...prev, data])
       setSelected(data)
       return { success: true, data }
     } catch (err) {
@@ -56,13 +69,15 @@ export function useEntradas() {
       setLoading(false)
     }
   }
+
   return {
     loading,
-    entradas,
+    salidas,
     selected,
     error,
-    fetchEntradas,
-    fetchEntradaById,
+    fetchSalidas,
+    fetchSalidaById,
+    fetchRazonesSalida,
     save,
     setSelected,
   }

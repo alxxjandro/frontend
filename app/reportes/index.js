@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useEffect, useState } from 'react'
 import {
   View,
@@ -12,24 +13,31 @@ import {
 import { useRouter } from 'expo-router'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import CustomIcon from '../../components/customIcon'
-import CustomDropdown from '../../components/CustomDropdown'
 import { globalStyles, COLORS, FONTS } from '../../styles/globalStyles'
 import { useLogs } from '../../hooks/useLogs'
+import Spinner from '../../components/Spinner'
 
 export default function ReportesScreen() {
   const router = useRouter()
-  const { fetchLogsByYear, fetchReportesByDate, reportes, loading, error } =
-    useLogs()
+  const { fetchLogsByYear, fetchReportesByDate, reportes, loading } = useLogs()
 
-  const [reportType, setReportType] = useState('Todos')
-  const [sortOrder, setSortOrder] = useState('Más reciente')
-  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
-  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
   const [reportCounts, setReportCounts] = useState({})
   const [localError, setLocalError] = useState(null)
 
-  const reportTypeOptions = ['Todos', 'Entradas', 'Salidas']
-  const sortOptions = ['Más reciente', 'Más antiguo']
+  const monthMap = {
+    enero: 1,
+    febrero: 2,
+    marzo: 3,
+    abril: 4,
+    mayo: 5,
+    junio: 6,
+    julio: 7,
+    agosto: 8,
+    septiembre: 9,
+    octubre: 10,
+    noviembre: 11,
+    diciembre: 12,
+  }
 
   useEffect(() => {
     fetchLogsByYear()
@@ -44,17 +52,20 @@ export default function ReportesScreen() {
   const fetchCounts = async () => {
     if (!reportes || reportes.length === 0) return
 
-    // ✅ OPTIMIZATION: Fetch all counts in parallel
     const promises = []
     const keys = []
 
     for (const yearData of reportes) {
       for (const month of yearData.months) {
-        const numericMonth = parseInt(month)
-        if (isNaN(numericMonth)) continue
+        const numericMonth = monthMap[month.toLowerCase()]
+        if (!numericMonth) {
+          console.warn(`Mes inválido: ${month}`)
+          continue
+        }
 
         const key = `${yearData.year}-${month}`
         keys.push(key)
+
         promises.push(
           fetchReportesByDate(yearData.year, numericMonth).catch((err) => {
             console.error(`Error fetching ${key}:`, err.message)
@@ -64,18 +75,12 @@ export default function ReportesScreen() {
       }
     }
 
-    // Execute all API calls in parallel
     const results = await Promise.all(promises)
-
-    // Process results
     const counts = {}
+
     results.forEach((result, index) => {
       const key = keys[index]
-
-      // Support backend count field (optimized) or count array (fallback)
-      if (result?.success && typeof result.count === 'number') {
-        counts[key] = result.count
-      } else if (result?.success && Array.isArray(result.data)) {
+      if (result?.success && Array.isArray(result.data)) {
         counts[key] = result.data.length
       } else {
         counts[key] = 0
@@ -85,13 +90,16 @@ export default function ReportesScreen() {
     setReportCounts(counts)
   }
 
-  const handleOutsidePress = () => {
-    Keyboard.dismiss()
-    setIsTypeDropdownOpen(false)
-    setIsSortDropdownOpen(false)
+  const handleReportPress = (item) => {
+    const group = `${item.year}-${item.month}`
+    router.push(`/reportes/list/${group}`)
   }
 
-  const groupedData = (reportes || []).map((item) => ({
+  const handleOutsidePress = () => {
+    Keyboard.dismiss()
+  }
+
+  const groupedData = reportes?.map((item) => ({
     title: item.year.toString(),
     data: item.months.map((month) => ({
       name: `Reportes de ${month}`,
@@ -99,11 +107,6 @@ export default function ReportesScreen() {
       month,
     })),
   }))
-
-  const handleReportPress = (item) => {
-    const group = `${item.year}-${item.month}`
-    router.push(`/reportes/list/${group}`)
-  }
 
   const renderReportItem = ({ item, index }) => (
     <TouchableOpacity
@@ -116,7 +119,7 @@ export default function ReportesScreen() {
       <View style={{ flexDirection: 'column' }}>
         <Text style={styles.reportTitle}>{item.name}</Text>
         <Text style={styles.reportCount}>
-          {reportCounts[`${item.year}-${item.month}`] ?? 0} reportes
+          {reportCounts[`${item.year}-${item.month}`] ?? 0} operaciones
         </Text>
       </View>
       <Text style={styles.arrowIcon}>›</Text>
@@ -132,12 +135,11 @@ export default function ReportesScreen() {
       <SafeAreaView style={globalStyles.body}>
         <TouchableWithoutFeedback onPress={handleOutsidePress}>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            {/* HEADER */}
             <View style={styles.headerContainer}>
               <View style={styles.header}>
                 <Text style={globalStyles.h1}>Reportes</Text>
                 <Text style={styles.countText}>
-                  ({groupedData.length} años de reportes)
+                  ({groupedData?.length ?? 0} años disponibles)
                 </Text>
               </View>
               <CustomIcon
@@ -149,44 +151,6 @@ export default function ReportesScreen() {
               />
             </View>
 
-            <View style={[styles.filterContainer, { width: 332 }]}>
-              <CustomDropdown
-                label="Tipo de reporte"
-                options={reportTypeOptions}
-                value={reportType}
-                onSelect={(val) => {
-                  setReportType(val)
-                  setIsTypeDropdownOpen(false)
-                }}
-                isOpen={isTypeDropdownOpen}
-                setIsOpen={(val) => {
-                  setIsTypeDropdownOpen(val)
-                  if (val) setIsSortDropdownOpen(false)
-                }}
-                bgColor={COLORS.primaryBlue}
-                borderColor={COLORS.primaryBlue}
-                textColor={COLORS.whiteText}
-              />
-              <CustomDropdown
-                label="Ordenar por"
-                options={sortOptions}
-                value={sortOrder}
-                onSelect={(val) => {
-                  setSortOrder(val)
-                  setIsSortDropdownOpen(false)
-                }}
-                isOpen={isSortDropdownOpen}
-                setIsOpen={(val) => {
-                  setIsSortDropdownOpen(val)
-                  if (val) setIsTypeDropdownOpen(false)
-                }}
-                bgColor={COLORS.primaryBlue}
-                borderColor={COLORS.primaryBlue}
-                textColor={COLORS.whiteText}
-              />
-            </View>
-
-            {/* LISTA */}
             <ScrollView
               style={{ width: 332 }}
               contentContainerStyle={{ paddingBottom: 80 }}
@@ -197,15 +161,7 @@ export default function ReportesScreen() {
               ) : (
                 <>
                   {localError && (
-                    <Text
-                      style={{
-                        color: 'orange',
-                        marginBottom: 10,
-                        textAlign: 'center',
-                      }}
-                    >
-                      ⚠️ {localError}
-                    </Text>
+                    <Text style={styles.errorText}>{localError}</Text>
                   )}
                   <SectionList
                     sections={groupedData}
@@ -227,6 +183,7 @@ export default function ReportesScreen() {
             </ScrollView>
           </View>
         </TouchableWithoutFeedback>
+        <Spinner isVisible={loading} />
       </SafeAreaView>
     </SafeAreaProvider>
   )
@@ -247,12 +204,6 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.sm,
     color: COLORS.greyText,
     marginTop: 4,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginVertical: 12,
   },
   sectionHeader: {
     fontFamily: FONTS.bold,
@@ -299,5 +250,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: COLORS.greyText,
     marginTop: 20,
+  },
+  errorText: {
+    color: 'orange',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 })

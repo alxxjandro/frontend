@@ -1,53 +1,84 @@
-import { View, Text } from 'react-native'
+/* eslint-disable */
+import { View, Text, StyleSheet } from 'react-native'
 import { Link } from 'expo-router'
-import { globalStyles } from '../styles/globalStyles'
+import { globalStyles, SIZE, COLORS } from '../styles/globalStyles'
 import CustomButton from '../components/customButton'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import CustomSquareButton from '../components/customSquareButton'
 import CustomBottomBar from '../components/customBottomBar'
-import { SIZE, COLORS } from '../styles/globalStyles'
-import { StyleSheet } from 'react-native'
 import UserIcon from '../components/userIcon'
 import { useAuth } from '../hooks/useAuth'
 import { useInventario } from '../hooks/useInventario'
 import { useEffect, useState } from 'react'
+import { useLogs } from '../hooks/useLogs'
+import { useEntradas } from '../hooks/useEntradas'
+import { useSalidas } from '../hooks/useSalidas'
 
 export default function Page() {
   const { user } = useAuth()
+  const { entradas, fetchEntradas, loading: loadingEntradas } = useEntradas()
+  const { salidas, fetchSalidas, loading: loadingSalidas } = useSalidas()
+  const { fetchLogsByYear, reportes, loading: loadingLogs } = useLogs()
+  const {
+    inventario,
+    fetchAll: fetchProductos,
+    loading: loadingInventario,
+  } = useInventario()
+
   const [productoCount, setProductCount] = useState(0)
-  const name =
-    user?.nombreUsuario.charAt(0).toUpperCase() +
-      user?.nombreUsuario.slice(1) || 'usuario'
+  const [logsCount, setLogCount] = useState(0)
 
-  const { inventario, fetchAll: fetchProductos } = useInventario()
+  const name = user?.nombreUsuario
+    ? user.nombreUsuario.charAt(0).toUpperCase() + user.nombreUsuario.slice(1)
+    : 'Usuario'
 
-  //fetch and update the product count on mount
   useEffect(() => {
     fetchProductos()
+    fetchLogsByYear()
+    fetchEntradas()
+    fetchSalidas()
   }, [])
 
   useEffect(() => {
-    setProductCount(inventario?.length)
+    const totalMeses =
+      reportes?.reduce((acc, item) => acc + item.months.length, 0) || 0
+    setLogCount(totalMeses)
+  }, [reportes])
+
+  useEffect(() => {
+    setProductCount(inventario?.length || 0)
   }, [inventario])
+
+  const entradasSubtitle = loadingEntradas
+    ? 'Cargando...'
+    : entradas
+      ? `${entradas.count || entradas.length || 0} entradas creadas`
+      : '0 entradas creadas'
+
+  const salidasSubtitle = loadingSalidas
+    ? 'Cargando...'
+    : salidas
+      ? `${salidas?.data?.length || 0} salidas creadas hoy`
+      : '0 salidas creadas hoy'
+
+  const inventarioSubtitle = loadingInventario
+    ? 'Cargando...'
+    : `${productoCount} productos`
+
+  const reportesSubtitle = loadingLogs
+    ? 'Cargando...'
+    : `${logsCount} reportes disponibles`
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={globalStyles.body}>
         <View style={[globalStyles.body]}>
-          <View
-            style={{
-              height: '100%',
-              gap: '30',
-            }}
-          >
+          <View style={{ height: '100%', gap: 30 }}>
+            {/* HEADER */}
             <View style={styles.userHeader}>
               <UserIcon name={name} bgColor={COLORS.primaryBlue15} />
               <View
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: 0,
-                }}
+                style={{ display: 'flex', justifyContent: 'center', gap: 0 }}
               >
                 <Text>Bienvenido 👋</Text>
                 <Text style={globalStyles.h2}>{name}</Text>
@@ -60,14 +91,14 @@ export default function Page() {
                 <Link href="/nuevaEntrada" asChild>
                   <CustomSquareButton
                     title="Registrar entrada"
-                    subtitle="7 entradas creadas hoy"
+                    subtitle={entradasSubtitle}
                   />
                 </Link>
 
                 <Link href="/nuevaSalida" asChild>
                   <CustomSquareButton
                     title="Registrar salida"
-                    subtitle="4 salidas creadas hoy"
+                    subtitle={salidasSubtitle}
                     icon="exit-outline"
                     borderColor={COLORS.primaryBlue}
                     backgroundColor={COLORS.primaryBlue15}
@@ -77,7 +108,7 @@ export default function Page() {
                 <Link href="/inventario" asChild>
                   <CustomSquareButton
                     title="Mi inventario"
-                    subtitle={`${productoCount} productos`}
+                    subtitle={inventarioSubtitle}
                     icon="archive-outline"
                     borderColor={COLORS.brownAccent}
                     backgroundColor={COLORS.brownAccent15}
@@ -87,7 +118,7 @@ export default function Page() {
                 <Link href="/reportes" asChild>
                   <CustomSquareButton
                     title="Gestionar reportes"
-                    subtitle="11 reportes disponibles"
+                    subtitle={reportesSubtitle}
                     icon="book-outline"
                     borderColor={COLORS.yellowAccent}
                     backgroundColor={COLORS.yellowAccent15}

@@ -1,9 +1,6 @@
-import React from 'react'
 import { View, StyleSheet } from 'react-native'
-import * as Progress from 'react-native-progress' // Importamos la librería
-
+import * as Progress from 'react-native-progress'
 import { COLORS, globalStyles } from '../styles/globalStyles'
-// NOTA: Asegúrate de que la ruta a globalStyles sea correcta
 
 const Spinner = ({ isVisible }) => {
   if (!isVisible) {

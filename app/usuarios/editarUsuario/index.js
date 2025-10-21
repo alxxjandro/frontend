@@ -14,6 +14,8 @@ import CustomIcon from '../../../components/customIcon'
 import CustomInput from '../../../components/customInput'
 import CustomButton from '../../../components/customButton'
 import CustomDropdown from '../../../components/CustomDropdown'
+import Spinner from '../../../components/Spinner'
+import Toast from '../../../components/Toast'
 
 import { useUsuarios } from '../../../hooks/useUsuarios'
 
@@ -22,28 +24,26 @@ export default function EditUsuario() {
   const params = useLocalSearchParams()
   const { editUsuario, removeUsuario } = useUsuarios()
 
-  // Inicializamos estados solo una vez
   const [newID] = useState(params.idUsuario || '')
   const [newName, setNewName] = useState(params.nombreUsuario || '')
   const [newAP, setNewAP] = useState(params.apellidoPaterno || '')
   const [newAM, setNewAM] = useState(params.apellidoMaterno || '')
-  const [role, setRole] = useState('') // texto del rol
+  const [role, setRole] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  // Role hierarchy: 3 = highest permissions, 1 = lowest
   const mockRoles = [
-    'Encargado general', // Highest permissions
-    'Encargado de almacen', // Medium permissions
-    'Encargado de cocina', // Lowest permissions
+    'Encargado general',
+    'Encargado de almacen',
+    'Encargado de cocina',
   ]
 
   const roleMapping = {
-    'Encargado general': 3, // Highest permissions
-    'Encargado de almacen': 2, // Medium permissions
-    'Encargado de cocina': 1, // Lowest permissions
+    'Encargado general': 3,
+    'Encargado de almacen': 2,
+    'Encargado de cocina': 1,
   }
 
-  // Si params.permisoUsuario viene, traducimos a texto
   useEffect(() => {
     if (params.permisoUsuario) {
       const roleText = Object.keys(roleMapping).find(
@@ -58,7 +58,7 @@ export default function EditUsuario() {
 
   const handleEditUser = async () => {
     if (!newName || !newAP || !newAM || !role) {
-      alert('Por favor completa todos los campos obligatorios.')
+      Toast.show('Por favor completa todos los campos obligatorios.', 'error')
       return
     }
 
@@ -68,25 +68,47 @@ export default function EditUsuario() {
       apellidoMaterno: newAM,
       permisoUsuario: roleMapping[role] || 0,
     }
-    await editUsuario(newID, body)
-    router.navigate('/usuarios')
+
+    try {
+      setLoading(true)
+      await editUsuario(newID, body)
+      Toast.show('Usuario editado correctamente', 'success')
+
+      setTimeout(() => {
+        router.navigate('/usuarios')
+      }, 1500)
+    } catch (err) {
+      console.error(err)
+      Toast.show('Error al editar usuario', 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDeleteUser = async () => {
     Alert.alert(
       'Confirmar eliminación',
-      '¿Estás seguro de que deseas eliminar este usuario? (se borraran todos sus datos, ejemplo: entradas, salidas y reportes)',
+      '¿Estás seguro de que deseas eliminar este usuario? (Se borrarán todas sus entradas, salidas y reportes)',
       [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
+        { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Eliminar',
           style: 'destructive',
           onPress: async () => {
-            await removeUsuario(newID)
-            router.navigate('/usuarios')
+            try {
+              setLoading(true)
+              await removeUsuario(newID)
+              Toast.show('Usuario eliminado correctamente', 'success')
+
+              setTimeout(() => {
+                router.navigate('/usuarios')
+              }, 1500)
+            } catch (err) {
+              console.error(err)
+              Toast.show('Error al eliminar usuario', 'error')
+            } finally {
+              setLoading(false)
+            }
           },
         },
       ]
@@ -148,19 +170,23 @@ export default function EditUsuario() {
                 title="Borrar Usuario"
                 onPress={handleDeleteUser}
                 outlined
+                textSize={14}
                 borderRadius={4}
-                backgroundColor={COLORS.error}
-                textColor={COLORS.error}
+                textColor={COLORS.primaryBlue}
               />
               <CustomButton
                 title="Editar Usuario"
                 onPress={handleEditUser}
+                textSize={14}
                 borderRadius={4}
                 backgroundColor={COLORS.primaryBlue}
               />
             </View>
           </View>
         </TouchableWithoutFeedback>
+
+        <Spinner isVisible={loading} />
+        <Toast.Container />
       </SafeAreaView>
     </SafeAreaProvider>
   )
