@@ -1,7 +1,5 @@
-/* eslint-disable */
 import InventarioServiceProxy from '../api/proxies/inventarioService'
 
-// Mock global fetch
 global.fetch = jest.fn()
 
 describe('InventarioService Tests', () => {
@@ -12,7 +10,6 @@ describe('InventarioService Tests', () => {
     jest.clearAllMocks()
   })
 
-  // Test 1: Successfully get all inventario
   test('getAllInventario successfully returns list of inventario', async () => {
     const mockResponse = {
       success: true,
@@ -40,7 +37,6 @@ describe('InventarioService Tests', () => {
     expect(result.success).toBe(true)
   })
 
-  // Test 2: Successfully update inventario
   test('updateInventario successfully updates and returns inventario', async () => {
     const mockRequest = {
       idProducto_producto: 3,
@@ -70,7 +66,6 @@ describe('InventarioService Tests', () => {
     expect(result.success).toBe(true)
   })
 
-  // Test 3: Update inventario fails with 400 (invalid data)
   test('updateInventario throws error for invalid data (400)', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,

@@ -1,7 +1,5 @@
-/* eslint-disable */
 import EntradasServiceProxy from '../api/proxies/entradasService'
 
-// Mock global fetch
 global.fetch = jest.fn()
 
 describe('EntradasService Tests', () => {
@@ -12,7 +10,6 @@ describe('EntradasService Tests', () => {
     jest.clearAllMocks()
   })
 
-  // Test 1: Successfully get all entradas
   test('getAllEntradas successfully returns list of entradas', async () => {
     const mockResponse = {
       success: true,
@@ -40,7 +37,6 @@ describe('EntradasService Tests', () => {
     expect(result.success).toBe(true)
   })
 
-  // Test 2: Successfully create a new entrada
   test('createEntrada successfully creates and returns entrada', async () => {
     const mockRequest = {
       idUsuario_usuario: 2,
@@ -77,7 +73,6 @@ describe('EntradasService Tests', () => {
     expect(result.success).toBe(true)
   })
 
-  // Test 3: Get all entradas fails with 500 error
   test('getAllEntradas throws error on server failure (500)', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,

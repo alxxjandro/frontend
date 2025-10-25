@@ -1,7 +1,5 @@
-/* eslint-disable */
 import LogsServiceProxy from '../api/proxies/logsService'
 
-// Mock global fetch
 global.fetch = jest.fn()
 
 describe('LogsService Tests', () => {
@@ -12,7 +10,6 @@ describe('LogsService Tests', () => {
     jest.clearAllMocks()
   })
 
-  // Test 1: Successfully get all reportes by year
   test('getReporteByYear successfully returns years and months', async () => {
     const mockResponse = {
       success: true,
@@ -36,7 +33,6 @@ describe('LogsService Tests', () => {
     expect(result.success).toBe(true)
   })
 
-  // Test 2: Successfully get reporte detail by date
   test('getReporteByDetail successfully returns daily report', async () => {
     const mockResponse = {
       success: true,
@@ -62,7 +58,6 @@ describe('LogsService Tests', () => {
     expect(result.success).toBe(true)
   })
 
-  // Test 3: Get reporte fails with 404 (not found)
   test('getReporteByDetail throws error when reporte not found (404)', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
